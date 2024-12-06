@@ -52,10 +52,10 @@ class RouletteBetButton {
             const buttonPosition = this.button.getBoundingClientRect();
             this.chipElement.style.left = buttonPosition.x + 
                 (this.rotation ? this.button.clientHeight : this.button.clientWidth) / 
-                2 + 2 + 'px'; 
+                2 + 1 + 'px'; 
             this.chipElement.style.top = buttonPosition.y + 
                 (this.rotation ? this.button.clientWidth : this.button.clientHeight) / 
-                2 + 2 + 'px';
+                2 + 1 + 'px';
             this.chipElement.style.backgroundColor = 'green';
             this.chipElement.style.borderColor = 'white';
             this.chipElement.style.borderWidth = '4px';
@@ -233,10 +233,36 @@ class Roulette {
     bottomRowButtons = [];
 
     /**
-     * 
-     * @param { HTMLElement } container 
+     * @type { RouletteBetButton }
      */
-    constructor(container) {
+    zeroButton = new RouletteBetButton([0], '0');
+
+    balanceElement = document.createElement('span');
+    totalBetElement = document.createElement('span');
+    /**
+     * 
+     * @param { HTMLElement } gameContainer 
+     */
+    constructor(gameContainer) {
+
+        const container = /** @type { HTMLElement } */ (gameContainer.querySelector('#game'));
+
+        const dynamicContainer = /** @type { HTMLElement } */ (gameContainer.querySelector('#dynamic'));
+
+        // Header
+        const headerElement = document.createElement('div');
+        headerElement.classList.add('header');
+        
+        const balanceElements = this.createNumberIndicatorElement('Balance');
+        const totalElements = this.createNumberIndicatorElement('Total');
+
+        balanceElements.indicator.innerHTML = '$ 0,00';
+        totalElements.indicator.innerHTML = '$ 0,00';
+
+        headerElement.append(balanceElements.container, totalElements.container);
+
+        container.append(headerElement);
+
         const tableSizeX = 3;
         const tableSizeY = 12;
         const betNumbers = createBetNumbers(tableColors, 3, 12);
@@ -272,7 +298,7 @@ class Roulette {
                 cell.append(cellDiv);
                 if (y >= tableSizeY) {
                     cell.classList.add('side', 'gray');
-                    container.append(this.twoToOneButtons[x].chipElement)
+                    dynamicContainer.append(this.twoToOneButtons[x].chipElement)
                     cellDiv.append(this.twoToOneButtons[x].button)
                     rows[x].append(cell);
                     continue;
@@ -312,7 +338,7 @@ class Roulette {
             col.classList.add('gray');
             col.classList.add('col-button')
             columnButtonsRow.append(col);
-            container.append(button.chipElement);
+            dynamicContainer.append(button.chipElement);
         })
 
         table.append(columnButtonsRow);
@@ -332,15 +358,30 @@ class Roulette {
             const col = document.createElement('td');
             col.colSpan = 2;
             col.append(button.button);
-            col.classList.add('gray');
+            if(button.button.innerText === 'red') {
+                col.classList.add('red')
+                // Need to add a space character because having no characters
+                // messes with the consistency of the layout for some reason
+                button.button.innerHTML = '&nbsp;';
+            } else if(button.button.innerText === 'black') {
+                col.classList.add('black');
+                button.button.innerHTML = '&nbsp;';
+            } else {
+                col.classList.add('gray');
+            }
             col.classList.add('col-button')
             bottomRow.append(col);
-            container.append(button.chipElement);
+            dynamicContainer.append(button.chipElement);
         })
 
         table.append(bottomRow);
 
         container.append(table);
+
+        const zeroButtonContainer = document.createElement('img');
+        zeroButtonContainer.src = './res/GreenPart.svg';
+        zeroButtonContainer.style.position = 'absolute';
+        // container.append(zeroButtonContainer);
 
         const buttonElementsArraySize = getButtonsArraySize(tableSizeX, tableSizeY);
         
@@ -369,12 +410,33 @@ class Roulette {
 
                 buttonElements.push(button);
                 baseTableButtons[y][x].button = button;
-                container.append(baseTableButtons[y][x].chipElement)
-                container.append(button);
+                dynamicContainer.append(baseTableButtons[y][x].chipElement)
+                dynamicContainer.append(button);
             }
         }
         this.buttonElements = buttonElements;
+
         this.addEventListeners();
+    }
+
+    createNumberIndicatorElement(label) {
+        const container = document.createElement('div');
+        container.classList.add('indicator-container')
+
+        const labelElement = document.createElement('span');
+
+        labelElement.innerHTML = label;
+
+        const indicator = document.createElement('span');
+        indicator.classList.add('indicator');
+
+        container.append(labelElement);
+        container.append(indicator);
+
+        return {
+            container,
+            indicator
+        }
     }
 
     /**
@@ -402,6 +464,6 @@ class Roulette {
     }
 }
 
-const element = /** @type { HTMLElement } */ (document.getElementById('game'));
+const element = /** @type { HTMLElement } */ (document.getElementById('game-container'));
 
 const game = new Roulette(element);
