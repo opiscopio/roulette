@@ -11,7 +11,7 @@ class BetNumber {
 class RouletteBetButton {
 
     numbers;
-    bet = 0;
+    bets = [];
     /**
      * @type { HTMLButtonElement }
      */
@@ -43,12 +43,18 @@ class RouletteBetButton {
 
     addBet(amount) {
         console.log('adding bet')
-        this.bet += amount;
+        if(this.bets.filter(bet => bet === amount).length >= 10) {
+            return;
+        }
+        this.bets.push(amount);
+        this.renderChip();
+    }
 
-        if(this.bet > 0) {
+    renderChip() {
+        if(this.bets.length > 0) {
             this.chipElement.style.display = 'flex';
             this.chipElement.style.position = 'absolute';
-            this.chipElement.innerHTML = this.bet.toString();
+            this.chipElement.innerHTML = this.bets.reduce((prev, curr) => prev + curr).toString();
             const buttonPosition = this.button.getBoundingClientRect();
             this.chipElement.style.left = buttonPosition.x + 
                 (this.rotation ? this.button.clientHeight : this.button.clientWidth) / 
@@ -64,8 +70,107 @@ class RouletteBetButton {
             this.chipElement.style.height = '48px';
             // this.chipElement.style.opacity = '100%';
         } else {
-            this.chipElement.style.display = 'invisible';
+            this.chipElement.style.display = 'none';
         }
+    }
+
+    getHistoryData() {
+        return {
+            button: this,
+            amount: this.getTotalBetAmount()
+        }
+    }
+
+    getTotalBetAmount() {
+        return this.bets.length > 0 ? this.bets.reduce((prev, curr) => prev + curr) : 0;
+    }
+
+    setBet(bet) {
+        if(bet == 0) {
+            this.clearBet();
+            return;
+        }
+        this.bets = [bet];
+        this.renderChip();
+    }
+
+    undoBet() {
+        this.bets.pop();
+        this.renderChip();
+    }
+
+    clearBet() {
+        console.log('clearing bet');
+        this.bets = [];
+        this.renderChip();
+    }
+}
+
+class ChipButton {
+
+    amount;
+
+    onClick;
+
+    button;
+
+    constructor(amount, imageURL) {
+        const SIZE_PX = 104;
+        const button = document.createElement('button');
+        button.classList.add('chip-button');
+        button.style.width = SIZE_PX + 'px';
+        button.style.height = SIZE_PX + 'px';
+        if(imageURL) {
+            const img = document.createElement('img');
+            img.src = imageURL;
+            img.width = SIZE_PX;
+            img.height = SIZE_PX;
+            img.style.position = 'absolute';
+            img.style.top = '0px';
+            img.style.left = '0px';
+            const label = document.createElement('span');
+            label.classList.add('chip-number');
+            label.innerHTML = amount;
+            button.append(img);
+            button.append(label);
+        } else {
+            button.style.borderRadius = '100px';
+            button.style.background = 'green';
+            button.style.border = '6px dashed white';
+            button.style.width = '104px';
+            button.style.height = '104px';
+            button.style.fontSize = '2rem';
+            button.innerHTML = amount;
+        }
+        button.addEventListener('click', () => {
+            if(this.onClick) {
+                this.onClick(amount);
+            }
+        })
+
+        this.button = button;
+    }
+
+    setActive() {
+        this.button.classList.add('active-chip');
+    }
+
+    setInactive() {
+        this.button.classList.remove('active-chip');
+    }
+}
+
+class Button {
+
+    button;
+
+    constructor(imageURL) {
+        this.button = document.createElement('button');
+        const image = document.createElement('img');
+        image.src = imageURL;
+        image.width = 48;
+        image.height = 48;
+        this.button.append(image);
     }
 }
 
@@ -111,6 +216,58 @@ const getButtonsArraySize = (numbersArrayX, numberArrayY) => {
     return {
         x,
         y
+    }
+}
+
+/**
+ * @typedef { Object } BetHistoryItem
+ * @property { RouletteBetButton } button
+ * @property { number } amount
+ */
+
+class BetHistory {
+    /**
+     * @type { BetHistoryItem[][] }
+     */
+    history = [];
+    constructor() {
+
+    }
+
+    push(items) {
+        this.history.push(items);
+    }
+
+    undo() {
+        if(!this.history.length) {
+            return;
+        }
+        let latestItem = [];
+        if(this.history.length === 1) {
+            latestItem = /** @type {any[]} */ (this.history.pop());
+            latestItem.forEach(item => {
+                item.button.setBet(0);
+            })
+        } else {
+            this.history.pop();
+            latestItem = this.history[this.history.length - 1];
+            console.log(latestItem);
+            BetHistory.restoreToItem(latestItem);
+        }
+    }
+
+    /**
+     * 
+     * @param { BetHistoryItem[] } items
+     */
+    static restoreToItem(items) {
+        items?.forEach(item => {
+            item.button.setBet(item.amount);
+        })
+    }
+
+    clear() {
+        this.history = [];
     }
 }
 
@@ -239,6 +396,30 @@ class Roulette {
 
     balanceElement = document.createElement('span');
     totalBetElement = document.createElement('span');
+
+    /**
+     * @type { ChipButton[] }
+     */
+    chipButtons = [];
+
+    clearBetButton = new Button('./res/ButtonClear.svg');
+    undoButton = new Button('./res/ButtonUndo.svg');
+    restoreButton = new Button('./res/ButtonRepeat.svg');
+    doubleButton = new Button('./res/ButtonDouble.svg');
+    spinButton = new Button('./res/ButtonSpin.svg');
+
+    betHistory = new BetHistory();
+
+    /**
+     * @type { BetHistoryItem[] }
+     */
+    latestBet = [];
+
+    /**
+     * @type { number }
+     * Currently selected bet amount
+     */
+    betAmount = 50;
     /**
      * 
      * @param { HTMLElement } gameContainer 
@@ -259,9 +440,38 @@ class Roulette {
         balanceElements.indicator.innerHTML = '$ 0,00';
         totalElements.indicator.innerHTML = '$ 0,00';
 
-        headerElement.append(balanceElements.container, totalElements.container);
+        const controlsContainer = document.createElement('div');
+        controlsContainer.classList.add('header');
+        controlsContainer.style.width = 'fit-content';
+
+        controlsContainer.append(this.clearBetButton.button);
+        controlsContainer.append(this.undoButton.button);
+        controlsContainer.append(this.restoreButton.button);
+        controlsContainer.append(this.doubleButton.button);
+        controlsContainer.append(this.spinButton.button);
+
+        headerElement.append(balanceElements.container, controlsContainer, totalElements.container);
 
         container.append(headerElement);
+
+        const chipButtonsContainer = document.createElement('div');
+        chipButtonsContainer.classList.add('chip-buttons');
+
+        this.chipButtons = [
+            new ChipButton(50, './res/ChipBlueLight.svg'),
+            new ChipButton(100, './res/ChipGreen.svg'),
+            new ChipButton(200, './res/ChipRed.svg'),
+            new ChipButton(500, './res/ChipBlueDark.svg'),
+            new ChipButton(1000, './res/ChipOrange.svg')
+        ]
+
+        this.chipButtons.forEach(button => {
+            chipButtonsContainer.append(button.button);
+        })
+
+        this.chipButtons[0].setActive();
+
+        container.append(chipButtonsContainer);
 
         const tableSizeX = 3;
         const tableSizeY = 12;
@@ -269,11 +479,6 @@ class Roulette {
         const baseTableButtons = createBetNumberButtonsForBaseTable(betNumbers, 3, 12);
         this.baseTableButtons = baseTableButtons;
         const table = document.createElement('table');
-
-        /**
-         * @type { HTMLElement[] }
-         */
-        const chipElements = [];
 
         /**
          * @type { HTMLTableRowElement[] }
@@ -378,10 +583,29 @@ class Roulette {
 
         container.append(table);
 
-        const zeroButtonContainer = document.createElement('img');
-        zeroButtonContainer.src = './res/GreenPart.svg';
+        const zeroButtonContainer = document.createElement('div');
+        const zeroButtonImage = document.createElement('img');
+        zeroButtonImage.src = './res/GreenPart.svg';
         zeroButtonContainer.style.position = 'absolute';
-        // container.append(zeroButtonContainer);
+        const bottomRows = table.querySelectorAll('tr:nth-child(n+4)');
+        const bottomRowsHeight = Array.from(bottomRows).map(row => row.clientHeight).reduce((prev, curr) => prev + curr);
+        zeroButtonImage.style.height = table.clientHeight - bottomRowsHeight + 'px';
+        console.log('table width: ', table.clientWidth);
+        zeroButtonContainer.style.right = (table.getBoundingClientRect().left + table.clientWidth) - 2 + 'px';
+        zeroButtonContainer.style.top = table.getBoundingClientRect().top + 'px';
+        zeroButtonContainer.style.display = 'flex';
+        zeroButtonContainer.style.alignItems = 'center';
+        this.zeroButton.button.style.position = 'absolute';
+        this.zeroButton.button.style.left = '0px';
+        this.zeroButton.button.style.top  = '0px';
+        this.zeroButton.button.style.width = '100%';
+        this.zeroButton.button.style.height = '100%';
+        this.zeroButton.button.classList.add('table-extra-button');
+
+        zeroButtonContainer.append(zeroButtonImage);
+        zeroButtonContainer.append(this.zeroButton.button)
+        dynamicContainer.append(zeroButtonContainer);
+        dynamicContainer.append(this.zeroButton.chipElement);
 
         const buttonElementsArraySize = getButtonsArraySize(tableSizeX, tableSizeY);
         
@@ -415,6 +639,7 @@ class Roulette {
             }
         }
         this.buttonElements = buttonElements;
+
 
         this.addEventListeners();
     }
@@ -452,14 +677,69 @@ class Roulette {
         allButtons = allButtons.concat(this.twoToOneButtons);
         allButtons = allButtons.concat(this.columnButtons);
         allButtons = allButtons.concat(this.bottomRowButtons);
+        allButtons.push(this.zeroButton);
         return allButtons;
     } 
 
     addEventListeners() {
         this.getAllBetButtons().forEach(button => {
             button.button.addEventListener('click', () => {
-                button.addBet(5);
+                button.addBet(this.betAmount);
+                this.betHistory.push(
+                    this.getAllBetButtons().map(button => button.getHistoryData())
+                )
             })
+        })
+
+        this.chipButtons.forEach((button) => {
+            button.onClick = (amount) => {
+                this.setBetAmount(amount);
+                this.makeAllChipButtonsInactive();
+                button.setActive();
+            }
+        })
+
+        
+        this.clearBetButton.button.addEventListener('click', () => {
+            this.clearBets();
+            this.betHistory.push([]);
+        })
+
+        this.undoButton.button.addEventListener('click', () => {
+            this.betHistory.undo();
+        })
+
+        this.doubleButton.button.addEventListener('click', () => {
+            this.doubleAmounts();
+        })
+    }
+
+    setBetAmount(amount) {
+        this.betAmount = amount;
+    }
+
+    doubleAmounts() {
+        this.getAllBetButtons().forEach(button => {
+            if(button.bets.length) {
+                button.bets.forEach(bet => {
+                    button.addBet(bet);
+                })
+            }
+        })
+        this.betHistory.push(
+            this.getAllBetButtons().map(button => button.getHistoryData())
+        )
+    }
+
+    makeAllChipButtonsInactive() {
+        this.chipButtons.forEach(button => {
+            button.setInactive();
+        })
+    }
+
+    clearBets() {
+        this.getAllBetButtons().forEach((button) => {
+            button.clearBet();
         })
     }
 }

@@ -48,6 +48,7 @@ body {
 
 #game * {
     font-family: 'Futura Md BT';
+    user-select: none;
 }
 
 #game-container {
@@ -86,6 +87,23 @@ body {
     pointer-events: all;
 }
 
+#game .chip-buttons {
+    display: flex;
+    gap: 16px;
+}
+
+#game .chip-buttons > button {
+    transition: 0.2s ease-in-out;
+}
+
+#game .chip-buttons > button:hover {
+    transform: scale(1.1);
+}
+
+#game .active-chip {
+    outline: 8px solid white;
+}
+
 #game table {
     z-index: 1;
     border-collapse: collapse;
@@ -97,6 +115,13 @@ body {
 
 #game .gray {
     background-color: rgba(0, 0, 0, 0.4);
+}
+
+#game-container .table-extra-button { 
+    z-index: 99;
+    font-size: 2rem;
+    cursor: pointer;
+    color: white;
 }
 
 #game td.side {
@@ -148,16 +173,27 @@ body {
 
 #game button:focus {
     border: none;
-    outline: none;
+    /* outline: none; */
 }
 
 #game button {
     cursor: pointer;
 }
 
-#game .chip {
+#game-container .chip {
     z-index: 100;
     pointer-events: none;
+}
+
+#game-container .chip-button {
+    position: relative;
+    border-radius: 100px;
+}
+
+#game-container .chip-number {
+    position: relative;
+    font-weight: bold;
+    font-size: 2em;
 }
 
 button {
