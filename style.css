@@ -49,6 +49,7 @@ body {
 #game-container * {
     font-family: 'Futura Md BT';
     user-select: none;
+    font-weight: medium;
 }
 
 #game-container {
@@ -114,7 +115,12 @@ body {
 }
 
 #game .gray {
+    font-size: 2rem;
     background-color: rgba(0, 0, 0, 0.4);
+}
+
+#game .gray button {
+    font-size: 1.2rem;
 }
 
 #game-container .table-extra-button { 
@@ -122,6 +128,11 @@ body {
     font-size: 2rem;
     cursor: pointer;
     color: white;
+}
+
+#game-container .table-extra-button:focus {
+    outline: none;
+    border: none;
 }
 
 #game-container .table-chip-img {

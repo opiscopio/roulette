@@ -211,6 +211,8 @@ const wheelNumMap = [
     17
 ]
 
+const WHEEL_ANIMATION_TIME = 5000;
+
 class Wheel {
 
     container = document.createElement('div');
@@ -248,6 +250,10 @@ class Wheel {
             this.wheel.style.transform = 'rotate(' + (1080 - rotation) + 'deg)';
             this.ballContainer.style.transform = 'rotate(' + (-1080) + 'deg)';
         }, 100)
+        setTimeout(() => {
+            this.wheel.style.transform = 'rotate(0deg)';
+            this.ballContainer.style.transform = 'rotate(0deg)';
+        }, WHEEL_ANIMATION_TIME);
     }
 }
 
@@ -440,6 +446,23 @@ const getTableButtonPosition = (table, buttonArrayX, buttonArrayY, buttonArraySi
     }
 }
 
+/**
+ * 
+ * @param { number } num 
+ * @returns { string }
+ */
+const numToCurrency = (num) => {
+    const strArr = Array.from(num.toString());
+    if(strArr.length < 2) {
+        strArr.unshift('0', ',', '0');
+    } else if(strArr.length < 3) {
+        strArr.unshift('0', ',');
+    } else {
+        strArr.splice(-2, 0, ',');
+    }
+    return '$ ' + strArr.join('');
+}
+
 class Roulette {
 
     /**
@@ -471,8 +494,8 @@ class Roulette {
      */
     zeroButton = new RouletteBetButton([0], '0');
 
-    balanceElement = document.createElement('span');
-    totalBetElement = document.createElement('span');
+    balanceElement = this.createNumberIndicatorElement('SALDO');
+    totalBetElement = this.createNumberIndicatorElement('APUESTA TOTAL')
 
     /**
      * @type { ChipButton[] }
@@ -501,6 +524,16 @@ class Roulette {
      * Currently selected bet amount
      */
     betAmount = 50;
+
+    /**
+     * The actual balance of the player
+     */
+    balance = 100000;
+
+    /**
+     * The 'local' balance that has any bet placement amounts deducted
+     */
+    displayedBalance = this.balance;
     /**
      * 
      * @param { HTMLElement } gameContainer 
@@ -516,12 +549,10 @@ class Roulette {
         const headerElement = document.createElement('div');
         headerElement.classList.add('header');
         
-        const balanceElements = this.createNumberIndicatorElement('Balance');
-        const totalElements = this.createNumberIndicatorElement('Total');
+        //const balanceElements = this.createNumberIndicatorElement('Balance');
+        //const totalElements = this.createNumberIndicatorElement('Total');
 
-        balanceElements.indicator.innerHTML = '$ 0,00';
-        totalElements.indicator.innerHTML = '$ 0,00';
-
+        // this.balanceElement.indicator.innerHTML = numToCurrency(this.balance);
         const controlsContainer = document.createElement('div');
         controlsContainer.classList.add('header');
         controlsContainer.style.width = 'fit-content';
@@ -532,7 +563,7 @@ class Roulette {
         controlsContainer.append(this.doubleButton.button);
         controlsContainer.append(this.spinButton.button);
 
-        headerElement.append(balanceElements.container, controlsContainer, totalElements.container);
+        headerElement.append(this.balanceElement.container, controlsContainer, this.totalBetElement.container);
 
         container.append(headerElement);
 
@@ -731,6 +762,9 @@ class Roulette {
 
         this.overlay.style.display = 'none';
 
+        this.renderBalance();
+        this.renderBetTotal();
+
         this.addEventListeners();
     }
 
@@ -771,6 +805,27 @@ class Roulette {
         return allButtons;
     } 
 
+    renderBalance() {
+        this.calculateDisplayedBalance();
+        this.balanceElement.indicator.innerHTML = numToCurrency(this.displayedBalance);
+    }
+
+    renderBetTotal() {
+        const betAmount = this.getTotalBet();
+        this.totalBetElement.indicator.innerHTML = numToCurrency(betAmount);
+    }
+
+    getTotalBet() {
+        const allBetButtons = this.getAllBetButtons();
+        const betAmount = allBetButtons.map(button => button.getTotalBetAmount()).reduce((prev, curr) => prev + curr);
+        return betAmount;
+    }   
+
+    calculateDisplayedBalance() {
+        
+        this.displayedBalance = this.balance - this.getTotalBet();
+    }
+
     addEventListeners() {
         this.getAllBetButtons().forEach(button => {
             button.button.addEventListener('click', () => {
@@ -778,6 +833,8 @@ class Roulette {
                 this.betHistory.push(
                     this.getAllBetButtons().map(button => button.getHistoryData())
                 )
+                this.renderBalance();
+                this.renderBetTotal();
             })
         })
 
@@ -793,14 +850,26 @@ class Roulette {
         this.clearBetButton.button.addEventListener('click', () => {
             this.clearBets();
             this.betHistory.push([]);
+            this.renderBalance();
+            this.renderBetTotal();
         })
 
         this.undoButton.button.addEventListener('click', () => {
             this.betHistory.undo();
+            this.renderBalance();
+            this.renderBetTotal();
         })
 
         this.doubleButton.button.addEventListener('click', () => {
             this.doubleAmounts();
+            this.renderBalance();
+            this.renderBetTotal();
+        });
+
+        this.restoreButton.button.addEventListener('click', () => {
+            this.betHistory.undo();
+            this.renderBalance();
+            this.renderBetTotal();
         })
 
         this.spinButton.button.addEventListener('click', () => {
@@ -816,7 +885,8 @@ class Roulette {
         this.overlay.style.display = 'flex';
         this.wheel.spin(4);
         setTimeout(() => {
-            this.overlay.style.display = 'none'
+            this.overlay.style.display = 'none';
+            this.clearBets();
         }, 5000);
     }
 
@@ -843,6 +913,8 @@ class Roulette {
         this.getAllBetButtons().forEach((button) => {
             button.clearBet();
         })
+        this.renderBalance();
+        this.renderBetTotal();
     }
 }
 
