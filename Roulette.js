@@ -186,13 +186,59 @@ class Button {
 
     button;
 
-    constructor(imageURL) {
+    constructor(imageURL, size = 48) {
         this.button = document.createElement('button');
         const image = document.createElement('img');
         image.src = imageURL;
-        image.width = 48;
-        image.height = 48;
+        image.width = size;
+        image.height = size;
         this.button.append(image);
+    }
+}
+
+class ToggleButton {
+
+    button = document.createElement('button');
+    image = document.createElement('img');
+    toggled = false;
+
+    toggledImage;
+    untoggledImage;
+
+    /**
+     * @type { ((toggled: boolean) => void) | undefined }
+     */
+    onToggle;
+
+    constructor(untoggledImageURL, toggledImageURL, size) {
+        this.toggledImage = toggledImageURL;
+        this.untoggledImage = untoggledImageURL;
+
+        this.button.append(this.image);
+        this.button.style.width = size;
+        this.button.style.height = size;
+
+        this.button.addEventListener('click', () => {
+            this.toggle();
+        })
+
+        this.render();
+    }
+
+    render() {
+        if(this.toggled) {
+            this.image.src = this.toggledImage;
+        } else {
+            this.image.src = this.untoggledImage;
+        }
+    }
+
+    toggle(){
+        this.toggled = !this.toggled;
+        if(this.onToggle) {
+            this.onToggle(this.toggled);
+        }
+        this.render();
     }
 }
 
@@ -208,10 +254,22 @@ const wheelNumMap = [
     21,
     2,
     25,
-    17
+    17,
+    34,
+    6,
+    27,
+    13,
+    36,
+    11,
+    30,
+    8,
+    23,
+    10
 ]
 
 const WHEEL_ANIMATION_TIME = 5000;
+const WINNING_NUMBER_ANIMATION_TIME = 2000;
+const TOTAL_WHEEL_ANIMATION_TIME = WHEEL_ANIMATION_TIME + WINNING_NUMBER_ANIMATION_TIME;
 
 class Wheel {
 
@@ -219,11 +277,15 @@ class Wheel {
     wheel = document.createElement('img');
     ballContainer = document.createElement('div');
     ball = document.createElement('div');
+    winningNumber = document.createElement('span');
 
     constructor() {
 
         this.container.classList.add('wheel-container');
 
+        this.winningNumber.classList.add('winning-number');
+        this.winningNumber.style.display = 'none';
+        
         const wheel = this.wheel;
 
         this.ball.classList.add('ball');
@@ -237,6 +299,7 @@ class Wheel {
 
         this.container.append(wheel);
         this.container.append(this.ballContainer);
+        this.container.append(this.winningNumber);
     }
 
     getRotationOfNumber(num) {
@@ -244,16 +307,34 @@ class Wheel {
         return (360 / 36) * position + 6;
     }
 
-    spin(num) {
-        const rotation = this.getRotationOfNumber(num)
+    spin(num, color) {
+        const rotation = this.getRotationOfNumber(num);
+        this.winningNumber.innerHTML = num;
+        this.winningNumber.style.color = color;
+        this.container.classList.add('spinning');
+
         setTimeout(() => {
             this.wheel.style.transform = 'rotate(' + (1080 - rotation) + 'deg)';
             this.ballContainer.style.transform = 'rotate(' + (-1080) + 'deg)';
+            this.ball.style.transform = 'translateY(64px)';
         }, 100)
         setTimeout(() => {
+            this.ball.classList.add('shake-ball');
+        }, WHEEL_ANIMATION_TIME - 1000)
+        setTimeout(() => {
+            this.winningNumber.style.opacity = '0';
+            this.winningNumber.style.display = 'inline';
+            setTimeout(() => {
+                this.winningNumber.style.opacity = '1';
+            }, 50)
+        }, WHEEL_ANIMATION_TIME - 500)
+        setTimeout(() => {
+            this.container.classList.remove('spinning');
             this.wheel.style.transform = 'rotate(0deg)';
             this.ballContainer.style.transform = 'rotate(0deg)';
-        }, WHEEL_ANIMATION_TIME);
+            this.ball.style.transform = 'translateY(0)';
+            this.winningNumber.style.opacity = '0';
+        }, TOTAL_WHEEL_ANIMATION_TIME);
     }
 }
 
@@ -453,13 +534,13 @@ const getTableButtonPosition = (table, buttonArrayX, buttonArrayY, buttonArraySi
  */
 const numToCurrency = (num) => {
     const strArr = Array.from(num.toString());
-    if(strArr.length < 2) {
-        strArr.unshift('0', ',', '0');
-    } else if(strArr.length < 3) {
-        strArr.unshift('0', ',');
-    } else {
-        strArr.splice(-2, 0, ',');
-    }
+    // if(strArr.length < 2) {
+    //     strArr.unshift('0', ',', '0');
+    // } else if(strArr.length < 3) {
+    //     strArr.unshift('0', ',');
+    // } else {
+    //     strArr.splice(-2, 0, ',');
+    // }
     return '$ ' + strArr.join('');
 }
 
@@ -530,6 +611,15 @@ class Roulette {
      */
     balance = 100000;
 
+    winningNumberHistory = [];
+
+    betNumbers = createBetNumbers(tableColors, 3, 12);
+
+    winningNumbersList = document.createElement('ul');
+
+    muteButton = new ToggleButton('./res/ButtonSoundON.svg', './res/ButtonSoundOFF.svg', '48px');
+    listButton = new Button('./res/ButtonList.svg', 36);
+
     /**
      * The 'local' balance that has any bet placement amounts deducted
      */
@@ -542,6 +632,11 @@ class Roulette {
 
         const container = /** @type { HTMLElement } */ (gameContainer.querySelector('#game'));
 
+        this.muteButton.button.classList.add('mute');
+        gameContainer.append(this.muteButton.button);
+
+        this.listButton.button.classList.add('list');
+        gameContainer.append(this.listButton.button);
 
         const dynamicContainer = /** @type { HTMLElement } */ (gameContainer.querySelector('#dynamic'));
 
@@ -586,9 +681,13 @@ class Roulette {
 
         container.append(chipButtonsContainer);
 
+        this.winningNumbersList.classList.add('winning-numbers');
+
+        gameContainer.append(this.winningNumbersList);
+
         const tableSizeX = 3;
         const tableSizeY = 12;
-        const betNumbers = createBetNumbers(tableColors, 3, 12);
+        const betNumbers = this.betNumbers;
         const baseTableButtons = createBetNumberButtonsForBaseTable(betNumbers, 3, 12);
         this.baseTableButtons = baseTableButtons;
         const table = document.createElement('table');
@@ -760,7 +859,7 @@ class Roulette {
 
         gameContainer.append(this.overlay);
 
-        this.overlay.style.display = 'none';
+        this.overlay.style.opacity = '0';
 
         this.renderBalance();
         this.renderBetTotal();
@@ -806,13 +905,22 @@ class Roulette {
     } 
 
     renderBalance() {
-        this.calculateDisplayedBalance();
-        this.balanceElement.indicator.innerHTML = numToCurrency(this.displayedBalance);
+        // this.calculateDisplayedBalance();
+        this.balanceElement.indicator.innerHTML = numToCurrency(this.balance);
     }
 
     renderBetTotal() {
         const betAmount = this.getTotalBet();
         this.totalBetElement.indicator.innerHTML = numToCurrency(betAmount);
+    }
+
+    renderWinningNumbers() {
+        this.winningNumbersList.innerHTML = '';
+        for(const winningNumber of this.winningNumberHistory) {
+            const liElement = document.createElement('li');
+            liElement.innerHTML = winningNumber;
+            this.winningNumbersList.append(liElement);
+        }
     }
 
     getTotalBet() {
@@ -849,7 +957,6 @@ class Roulette {
         
         this.clearBetButton.button.addEventListener('click', () => {
             this.clearBets();
-            this.betHistory.push([]);
             this.renderBalance();
             this.renderBetTotal();
         })
@@ -881,13 +988,37 @@ class Roulette {
         this.betAmount = amount;
     }
 
+    getBetNumber(num) {
+        for(const row of this.betNumbers) {
+            for(const betNumber of row) {
+                if(betNumber.number === num) {
+                    return betNumber;
+                }
+            }
+        }
+    }
+
     spin() {
-        this.overlay.style.display = 'flex';
-        this.wheel.spin(4);
+        this.overlay.classList.add('spinning');
+        this.overlay.style.opacity = '1';
+        const winningNumber = 19;
+        const betNumber = this.getBetNumber(winningNumber);
+        let color;
+        if(!betNumber) {
+            color = 'green';
+        } else if(betNumber.color === 'r') {
+            color = 'red';
+        } else {
+            color = 'black';
+        }
+        this.wheel.spin(winningNumber, color);
         setTimeout(() => {
-            this.overlay.style.display = 'none';
+            this.overlay.style.opacity = '0';
             this.clearBets();
-        }, 5000);
+            this.winningNumberHistory.push(winningNumber);
+            this.overlay.classList.remove('spinning');
+            // this.renderWinningNumbers();
+        }, TOTAL_WHEEL_ANIMATION_TIME - 500);
     }
 
     doubleAmounts() {
@@ -913,6 +1044,7 @@ class Roulette {
         this.getAllBetButtons().forEach((button) => {
             button.clearBet();
         })
+        this.betHistory.push(this.getAllBetButtons().map(button => button.getHistoryData()));
         this.renderBalance();
         this.renderBetTotal();
     }

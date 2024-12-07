@@ -238,6 +238,12 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
+    pointer-events: none;
+    transition: all 0.4s ease-in-out;
+}
+
+#game-container .spinning {
+    pointer-events: all;
 }
 
 #game-container .wheel-container {
@@ -249,17 +255,23 @@ button {
 
 #game-container .wheel-container img {
     position: absolute;
+}
+
+#game-container .wheel-container.spinning img {
     transition: 4s ease-out;
 }
 
 .ball-container {
-    transition: 4.4s ease-out;
     z-index: 500;
     position: absolute;
     width: 400px;
     height: 400px;
     display: flex;
     justify-content: center;
+}
+
+.wheel-container.spinning .ball-container {
+    transition: 4.4s ease-out;
 }
 
 .ball {
@@ -269,6 +281,69 @@ button {
     border-radius: 100px;
     background-color: lightgray;
 }
+
+.wheel-container.spinning .ball {
+    transition: 4.4s cubic-bezier(0.835, 0.200, 0.915, -0.240);
+}
+
+#game-container .winning-numbers {
+    list-style-type: none;
+    position: absolute;
+    bottom: 0px;
+    color: white;
+    padding-left: 18px;
+    font-size: 1.5rem;
+    height: 200px;
+    display: flex;
+    flex-direction: column-reverse;
+    overflow-y: hidden;
+
+    --mask: linear-gradient(to top, 
+      rgba(0,0,0, 1) 0,   rgba(0,0,0, 1) 70%, 
+      rgba(0,0,0, 0) 95%, rgba(0,0,0, 0) 0
+    ) 100% 50% / 100% 100% repeat-x;
+
+    mask: var(--mask);
+}
+
+#game-container .winning-number {
+    position: absolute;
+    right: 50%;
+    transform: translateX(calc(50% - 4px));
+    top: -48px;
+    color: white;
+    font-size: 2rem;
+    transition: all 0.4s ease-out;
+}
+
+#game-container button.mute {
+    cursor: pointer;
+    position: absolute;
+    bottom: 14px;
+    left: 14px;
+}
+
+#game-container button.list {
+    cursor: pointer;
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+}
+
+#game-container button.mute:focus, #game-container button.list {
+    border: none;
+}
+
+/* 
+#game-container .winning-numbers::after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    top: 0px;
+
+    width: 100%;
+    height: 80px;
+} */
 
 /* @keyframes spin {
     from {
