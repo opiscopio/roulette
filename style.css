@@ -215,3 +215,59 @@ button {
     background: transparent;
     border: none;
 }
+
+#game-container .overlay {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    background-color: rgba(150, 150, 150, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#game-container .wheel-container {
+    position: relative;
+    z-index: 500;
+    width: 400px;
+    height: 400px;
+}
+
+#game-container .wheel-container img {
+    position: absolute;
+    transition: 4s ease-out;
+}
+
+.ball-container {
+    transition: 4.4s ease-out;
+    z-index: 500;
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    display: flex;
+    justify-content: center;
+}
+
+.ball {
+    transform: translateY(16px);
+    width: 16px;
+    height: 16px;
+    border-radius: 100px;
+    background-color: lightgray;
+}
+
+/* @keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(1080deg);
+    }
+}
+
+.spin {
+    animation: 4s spin infinite ;
+} */

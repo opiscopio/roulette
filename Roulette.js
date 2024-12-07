@@ -197,6 +197,61 @@ class Button {
 }
 
 /**
+ * Mapping of numbers to their corresponding positions on the roulette
+ * index = position
+ * value = number. for number 32, position will be 0, for 19 - 1, etc
+ */
+const wheelNumMap = [
+    32,
+    19,
+    4,
+    21,
+    2,
+    25,
+    17
+]
+
+class Wheel {
+
+    container = document.createElement('div');
+    wheel = document.createElement('img');
+    ballContainer = document.createElement('div');
+    ball = document.createElement('div');
+
+    constructor() {
+
+        this.container.classList.add('wheel-container');
+
+        const wheel = this.wheel;
+
+        this.ball.classList.add('ball');
+        this.ballContainer.classList.add('ball-container');
+
+        this.ballContainer.append(this.ball);
+
+        wheel.src = './res/Wheel.svg';
+        wheel.width = 400;
+        wheel.height = 400;
+
+        this.container.append(wheel);
+        this.container.append(this.ballContainer);
+    }
+
+    getRotationOfNumber(num) {
+        const position = wheelNumMap.indexOf(num);
+        return (360 / 36) * position + 6;
+    }
+
+    spin(num) {
+        const rotation = this.getRotationOfNumber(num)
+        setTimeout(() => {
+            this.wheel.style.transform = 'rotate(' + (1080 - rotation) + 'deg)';
+            this.ballContainer.style.transform = 'rotate(' + (-1080) + 'deg)';
+        }, 100)
+    }
+}
+
+/**
  * Pattern of half of the table
  */
 const colorPatternHalf = [
@@ -432,10 +487,14 @@ class Roulette {
 
     betHistory = new BetHistory();
 
+    overlay = document.createElement('div');
+
     /**
      * @type { BetHistoryItem[] }
      */
     latestBet = [];
+
+    wheel = new Wheel();
 
     /**
      * @type { number }
@@ -449,6 +508,7 @@ class Roulette {
     constructor(gameContainer) {
 
         const container = /** @type { HTMLElement } */ (gameContainer.querySelector('#game'));
+
 
         const dynamicContainer = /** @type { HTMLElement } */ (gameContainer.querySelector('#dynamic'));
 
@@ -663,6 +723,14 @@ class Roulette {
         this.buttonElements = buttonElements;
 
 
+        this.overlay.classList.add('overlay');
+
+        this.overlay.append(this.wheel.container);
+
+        gameContainer.append(this.overlay);
+
+        this.overlay.style.display = 'none';
+
         this.addEventListeners();
     }
 
@@ -734,10 +802,22 @@ class Roulette {
         this.doubleButton.button.addEventListener('click', () => {
             this.doubleAmounts();
         })
+
+        this.spinButton.button.addEventListener('click', () => {
+            this.spin();
+        })
     }
 
     setBetAmount(amount) {
         this.betAmount = amount;
+    }
+
+    spin() {
+        this.overlay.style.display = 'flex';
+        this.wheel.spin(4);
+        setTimeout(() => {
+            this.overlay.style.display = 'none'
+        }, 5000);
     }
 
     doubleAmounts() {
