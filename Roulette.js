@@ -218,12 +218,16 @@ class Button {
         image.width = size;
         image.height = size;
 
-        const labelElement = document.createElement('span');
-        labelElement.innerHTML = label;
-        labelElement.style.fontWeight = 'medium';
-
         this.button.append(image);
-        this.button.append(labelElement);
+
+        if(label) {
+            const labelElement = document.createElement('span');
+            labelElement.innerHTML = label;
+            labelElement.style.fontWeight = 'medium';
+    
+            this.button.append(labelElement);
+        }
+
 
     }
 }
@@ -390,7 +394,7 @@ class Wheel {
     spin(num, color) {
         const rotation = this.getRotationOfNumber(num);
         this.winningNumber.innerHTML = num;
-        this.winningNumber.style.color = color;
+        this.winningNumber.style.backgroundColor = color;
         this.container.classList.add('spinning');
 
         setTimeout(() => {
@@ -717,6 +721,9 @@ class Roulette {
 
     overlay = document.createElement('div');
 
+    winMessage = document.createElement('div');
+    winMessageAmount = document.createElement('span');
+
     /**
      * @type { BetHistoryItem[] }
      */
@@ -744,6 +751,8 @@ class Roulette {
     muteButton = new ToggleButton('./res/ButtonSoundON.svg', './res/ButtonSoundOFF.svg', '48px');
     listButton = new Button('./res/ButtonList.svg', 36);
 
+    listOverlay = document.createElement('div');
+
     /**
      * The 'local' balance that has any bet placement amounts deducted
      */
@@ -763,6 +772,16 @@ class Roulette {
         gameContainer.append(this.listButton.button);
 
         const dynamicContainer = /** @type { HTMLElement } */ (gameContainer.querySelector('#dynamic'));
+
+        this.listOverlay.classList.add('overlay', 'dismissable-overlay');
+        this.listOverlay.style.opacity = '0';
+        const betListImg = document.createElement('img');
+        betListImg.src = './res/PaymentChart.webp';
+        betListImg.classList.add('bet-list')
+
+        this.listOverlay.append(betListImg);
+
+        gameContainer.append(this.listOverlay);
 
         // Header
         const headerElement = document.createElement('div');
@@ -976,10 +995,21 @@ class Roulette {
         }
         this.buttonElements = buttonElements;
 
+        this.winMessage.classList.add('win-message');
+        this.winMessage.style.opacity = '0';
+        // const winMessageImg = document.createElement('img');
+        // winMessageImg.src = './res/GradientYouWon.webp';
+        // this.winMessage.append(winMessageImg);
+
+        const winMessageText = document.createElement('span');
+        winMessageText.innerHTML = 'HA GANADO';
+
+        this.winMessage.append(winMessageText)
+        this.winMessage.append(this.winMessageAmount);
 
         this.overlay.classList.add('overlay');
-
         this.overlay.append(this.wheel.container);
+        this.overlay.append(this.winMessage);
 
         gameContainer.append(this.overlay);
 
@@ -1022,8 +1052,6 @@ class Roulette {
         }
         return betNumbers;
     }
-
-    getB
 
     /**
      * 
@@ -1077,7 +1105,6 @@ class Roulette {
     }   
 
     calculateDisplayedBalance() {
-        
         this.displayedBalance = this.balance - this.getTotalBet();
     }
 
@@ -1134,6 +1161,16 @@ class Roulette {
         this.spinButton.button.addEventListener('click', () => {
             this.spin();
         })
+
+        this.listButton.button.addEventListener('click', () => {
+            this.listOverlay.classList.add('active');
+            this.listOverlay.style.opacity = '1';
+        })
+        
+        this.listOverlay.addEventListener('click', () => {
+            this.listOverlay.classList.remove('active');
+            this.listOverlay.style.opacity = '0';
+        })
     }
 
     setBetAmount(amount) {
@@ -1160,15 +1197,18 @@ class Roulette {
         if(betNumber.color === 'g') {
             color = 'green';
         } else if(betNumber.color === 'r') {
-            color = 'red';
+            color = 'var(--red)';
         } else {
             color = 'black';
         }
         const wonAmount = this.calculateWonAmount(betNumber, this.getAllBetButtons()) - this.getTotalBet();
         console.log(wonAmount);
+        this.winMessageAmount.innerHTML = numToCurrency(wonAmount);
         this.wheel.spin(winningNumber, color);
+        const WIN_MESSAGE_TIME = 2000;
         setTimeout(() => {
-            this.overlay.style.opacity = '0';
+            // this.overlay.style.opacity = '0';
+            this.wheel.container.style.opacity = '0';
             this.latestBet = this.betHistory.history[this.betHistory.history.length - 1];
             this.clearBets();
             this.winningNumberHistory.push(winningNumber);
@@ -1177,8 +1217,16 @@ class Roulette {
             this.displayedBalance += wonAmount;
             this.renderBalance();
             this.renderBetTotal();
+            this.winMessage.style.opacity = '1';
+            setTimeout(() => {
+                this.overlay.style.opacity = '0';
+                this.winMessage.style.opacity = '0';
+                setTimeout(() => {
+                    this.wheel.container.style.opacity = '1';
+                }, 1000);
+            }, WIN_MESSAGE_TIME);
             // this.renderWinningNumbers();
-        }, TOTAL_WHEEL_ANIMATION_TIME - 500);
+        }, TOTAL_WHEEL_ANIMATION_TIME - 1000);
     }
 
     /**
