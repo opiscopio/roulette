@@ -8,6 +8,10 @@ class BetNumber {
     }
 }
 
+const nearestLowerNumberTo = (n, nums) => {
+    return nums.filter(num => num <= n).reduce((prev, curr) => prev < curr ? curr : prev);
+}
+
 class RouletteBetButton {
 
     numbers;
@@ -33,7 +37,7 @@ class RouletteBetButton {
             this.button.innerHTML = label;
             this.button.style.transform = 'rotate(' + rotation + 'deg)';
         }
-        this.numbers = numbers;
+        this.numbers = numbers || [];
         this.chipElement = document.createElement('div');
         this.chipElement.style.borderRadius = '100px';
         this.chipElement.style.transform = 'translate(-50%, -50%)';
@@ -52,12 +56,29 @@ class RouletteBetButton {
     }
 
     addBet(amount) {
-        console.log('adding bet')
-        if(this.bets.filter(bet => bet === amount).length >= 10) {
+        if(amount === 0) {
             return;
         }
-        this.bets.push(amount);
+        let sum = 0;
+        let limit = false;
+        let currBet = nearestLowerNumberTo(amount, [50, 100, 200, 500, 1000]);
+        while(!limit && (sum + currBet <= amount)) {
+            const totalBetsOfType = this.bets.filter(bet => bet === currBet).length;
+            if(totalBetsOfType < 10) {
+                this.bets.push(currBet);
+                sum += currBet;
+            } else if (currBet >= 1000) {
+                limit = true;
+            } else {
+                currBet = getNearestUpperBetAmountTo(currBet);
+            }
+        }
+        // if(this.bets.filter(bet => bet === amount).length >= 10) {
+        //     return false;
+        // }
+        // this.bets.push(amount);
         this.renderChip();
+        // return true;
     }
 
     renderChip() {
@@ -186,13 +207,40 @@ class Button {
 
     button;
 
-    constructor(imageURL, size = 48) {
+    constructor(imageURL, size = 48, label) {
         this.button = document.createElement('button');
+        this.button.style.display = 'flex';
+        this.button.style.flexDirection = 'column';
+        this.button.style.alignItems = 'center';
+        this.button.style.gap = '4px';
         const image = document.createElement('img');
         image.src = imageURL;
         image.width = size;
         image.height = size;
+
+        const labelElement = document.createElement('span');
+        labelElement.innerHTML = label;
+        labelElement.style.fontWeight = 'medium';
+
         this.button.append(image);
+        this.button.append(labelElement);
+
+    }
+}
+
+const getNearestUpperBetAmountTo = (num) => {
+    if (num >= 1000) {
+        return 1000;
+    } else if (num >= 500) {
+        return 1000;
+    } else if (num >= 200) {
+        return 500;
+    } else if (num >= 100) {
+        return 200;
+    } else if (num >= 50) {
+        return 100;
+    } else {
+        return 50;
     }
 }
 
@@ -248,7 +296,9 @@ class ToggleButton {
  * value = number. for number 32, position will be 0, for 19 - 1, etc
  */
 const wheelNumMap = [
+    0,
     32,
+    15,
     19,
     4,
     21,
@@ -264,9 +314,30 @@ const wheelNumMap = [
     30,
     8,
     23,
-    10
-]
+    10,
+    5,
+    24,
+    16,
+    33,
+    1,
+    20,
+    14,
+    31,
+    9,
+    22,
+    18,
+    29,
+    7,
+    28,
+    12,
+    35,
+    3,
+    26
+];
 
+const randNum = (max) => {
+    return Math.floor(Math.random() * max);
+}
 const WHEEL_ANIMATION_TIME = 5000;
 const WINNING_NUMBER_ANIMATION_TIME = 2000;
 const TOTAL_WHEEL_ANIMATION_TIME = WHEEL_ANIMATION_TIME + WINNING_NUMBER_ANIMATION_TIME;
@@ -275,6 +346,7 @@ class Wheel {
 
     container = document.createElement('div');
     wheel = document.createElement('img');
+    wheelBackground = document.createElement('img');
     ballContainer = document.createElement('div');
     ball = document.createElement('div');
     winningNumber = document.createElement('span');
@@ -293,10 +365,14 @@ class Wheel {
 
         this.ballContainer.append(this.ball);
 
-        wheel.src = './res/Wheel.svg';
+        wheel.src = './res/WheelFront.webp';
         wheel.width = 400;
         wheel.height = 400;
 
+        this.wheelBackground.src = './res/WheelBack.webp';
+        this.wheelBackground.classList.add('wheel-background');
+
+        this.container.append(this.wheelBackground);
         this.container.append(wheel);
         this.container.append(this.ballContainer);
         this.container.append(this.winningNumber);
@@ -304,7 +380,11 @@ class Wheel {
 
     getRotationOfNumber(num) {
         const position = wheelNumMap.indexOf(num);
-        return (360 / 36) * position + 6;
+        console.log(position)
+        console.log(wheelNumMap.length)
+        // Angle for a single step(number)
+        const stepAngle = (360 / wheelNumMap.length);
+        return -stepAngle * position// + stepAngle * 0.5;
     }
 
     spin(num, color) {
@@ -314,7 +394,7 @@ class Wheel {
         this.container.classList.add('spinning');
 
         setTimeout(() => {
-            this.wheel.style.transform = 'rotate(' + (1080 - rotation) + 'deg)';
+            this.wheel.style.transform = 'rotate(' + (1080 + rotation) + 'deg)';
             this.ballContainer.style.transform = 'rotate(' + (-1080) + 'deg)';
             this.ball.style.transform = 'translateY(64px)';
         }, 100)
@@ -456,7 +536,16 @@ const createBetNumberButtonsForBaseTable = (betNumbersArr, sizeX, sizeY) => {
         for(let x = 0; x < tableSizeX; x++) {
             let button;
             if(y === 0) {
-                button = new RouletteBetButton();
+                if(isEven(x + 1)) {
+                    button = new RouletteBetButton(betNumbersArr[0][(x + 1 / 2) - 1])
+                } else {
+                    const xPosition1 = x === 0  ? 0 : (x / 2) - 1;
+                    const xPosition2 = xPosition1 - 1;
+                    button = new RouletteBetButton([
+                        betNumbersArr[0][xPosition1],
+                        betNumbersArr[0][xPosition2]
+                    ])
+                }
             }
             // If selected is top or bottom row edges
             else if(x === tableSizeX - 1 || x === 0) {
@@ -477,12 +566,47 @@ const createBetNumberButtonsForBaseTable = (betNumbersArr, sizeX, sizeY) => {
                     // Single number button
                     const xPosition = (x + 1) / 2 - 1;
                     const yPosition = (y + 1) / 2 - 1;
+                    // console.log(yPosition, xPosition);
                     // console.log(yPosition);
                     button = new RouletteBetButton([
                         betNumbersArr[yPosition][xPosition]
                     ]);
+                } else {
+                    const xPosition1 = (x + 1) / 2 - 1;
+                    const xPosition2 = xPosition1 - 1;
+                    const yPosition = (y + 1) / 2 - 1;
+                    button = new RouletteBetButton([
+                        betNumbersArr[yPosition][xPosition1],
+                        betNumbersArr[yPosition][xPosition2]
+                    ])
                 }
                 const xPosition1 = (x / 2) + 1
+            } else {
+                if(isEven(x + 1)) {
+                    // Horizontal double
+                    const xPosition = (betNumbersArr[0].length - 1) - (((x + 1) / 2) - 1);
+                    console.log('xpos: ', xPosition);
+                    const yPosition1 = (y / 2) - 1;
+                    const yPosition2 = yPosition1 + 1;
+                    button = new RouletteBetButton([
+                        betNumbersArr[yPosition1][xPosition],
+                        betNumbersArr[yPosition2]?.[xPosition]
+                    ])
+                } // + intersection
+                else {
+                    const xPosition1 = betNumbersArr[0].length - (x / 2);
+                    const xPosition2 = xPosition1 - 1;
+                    console.log(x);
+                    const yPosition1 = (y / 2) - 1;
+                    const yPosition2 = yPosition1 + 1;
+                    button = new RouletteBetButton([
+                        betNumbersArr[yPosition1][xPosition1],
+                        betNumbersArr[yPosition2][xPosition1],
+                        betNumbersArr[yPosition1][xPosition2],
+                        betNumbersArr[yPosition2][xPosition2]
+                    ]);
+                    console.log(button.numbers);
+                }
             }
 
             if(!button) {
@@ -583,11 +707,11 @@ class Roulette {
      */
     chipButtons = [];
 
-    clearBetButton = new Button('./res/ButtonClear.svg');
-    undoButton = new Button('./res/ButtonUndo.svg');
-    restoreButton = new Button('./res/ButtonRepeat.svg');
-    doubleButton = new Button('./res/ButtonDouble.svg');
-    spinButton = new Button('./res/ButtonSpin.svg');
+    clearBetButton = new Button('./res/ButtonClear.svg', 64, 'BORRAR');
+    undoButton = new Button('./res/ButtonUndo.svg', 64, 'DESHACER');
+    restoreButton = new Button('./res/ButtonRepeat.svg', 64, 'REPETIR');
+    doubleButton = new Button('./res/ButtonDouble.svg', 64, 'DOBLAR');
+    spinButton = new Button('./res/ButtonSpin.svg', 64, 'TIRAR');
 
     betHistory = new BetHistory();
 
@@ -702,9 +826,9 @@ class Roulette {
         }
 
         this.twoToOneButtons = [
-            new RouletteBetButton([], '2:1', -90),
-            new RouletteBetButton([], '2:1', -90),
-            new RouletteBetButton([], '2:1', -90)
+            new RouletteBetButton(this.getBetNumbersRow(0), '2:1', -90),
+            new RouletteBetButton(this.getBetNumbersRow(1), '2:1', -90),
+            new RouletteBetButton(this.getBetNumbersRow(2), '2:1', -90)
         ];
 
         // Create a HTML table for the numbers
@@ -741,9 +865,9 @@ class Roulette {
         })
 
         this.columnButtons = [
-            new RouletteBetButton([], '1ra 12'),
-            new RouletteBetButton([], '2da 12'),
-            new RouletteBetButton([], '3ra 12')
+            new RouletteBetButton(this.getAllBetNumbers().slice(1, 12), '1ra 12'),
+            new RouletteBetButton(this.getAllBetNumbers().slice(13, 24), '2da 12'),
+            new RouletteBetButton(this.getAllBetNumbers().slice(25, 36), '3ra 12')
         ];
 
         const columnButtonsRow = document.createElement('tr');
@@ -761,12 +885,12 @@ class Roulette {
         table.append(columnButtonsRow);
 
         this.bottomRowButtons = [
-            new RouletteBetButton([], '1 - 18'),
-            new RouletteBetButton([], 'PAR'),
-            new RouletteBetButton([], 'red'),
-            new RouletteBetButton([], 'black'),
-            new RouletteBetButton([], 'IMPAR'),
-            new RouletteBetButton([], '19 - 36')
+            new RouletteBetButton(this.getAllBetNumbers().slice(1, 18), '1 - 18'),
+            new RouletteBetButton(this.getAllBetNumbers().filter(num => num.number !== 0 || isEven(num.number)), 'PAR'),
+            new RouletteBetButton(this.getAllBetNumbers().filter(num => num.color === 'r'), 'red'),
+            new RouletteBetButton(this.getAllBetNumbers().filter(num => num.color === 'b'), 'black'),
+            new RouletteBetButton(this.getAllBetNumbers().filter(num => num.number !== 0 || !isEven(num.number)), 'IMPAR'),
+            new RouletteBetButton(this.getAllBetNumbers().slice(19, 36), '19 - 36')
         ];
 
         const bottomRow = document.createElement('tr');
@@ -889,6 +1013,20 @@ class Roulette {
 
     /**
      * 
+     * @returns { BetNumber[] }
+     */
+    getAllBetNumbers() {
+        let betNumbers = [new BetNumber('g', 0)];
+        for(let y = 0; y < this.betNumbers.length; y++) {
+            betNumbers = betNumbers.concat(this.betNumbers[y]);
+        }
+        return betNumbers;
+    }
+
+    getB
+
+    /**
+     * 
      * @returns { RouletteBetButton[] }
      */
     getAllBetButtons() {
@@ -902,7 +1040,16 @@ class Roulette {
         allButtons = allButtons.concat(this.bottomRowButtons);
         allButtons.push(this.zeroButton);
         return allButtons;
-    } 
+    }
+
+    getBetNumbersRow(row) {
+        let betNumbers = [];
+        for(let y = 0; y < this.betNumbers.length; y++) {
+            betNumbers.push(this.betNumbers[y][row]);
+        }
+        console.log('row: ', betNumbers);
+        return betNumbers;
+    }
 
     renderBalance() {
         // this.calculateDisplayedBalance();
@@ -937,6 +1084,10 @@ class Roulette {
     addEventListeners() {
         this.getAllBetButtons().forEach(button => {
             button.button.addEventListener('click', () => {
+                console.log(button.numbers);
+                if(this.getTotalBet() + this.betAmount > this.displayedBalance) {
+                    return;
+                }
                 button.addBet(this.betAmount);
                 this.betHistory.push(
                     this.getAllBetButtons().map(button => button.getHistoryData())
@@ -974,7 +1125,8 @@ class Roulette {
         });
 
         this.restoreButton.button.addEventListener('click', () => {
-            this.betHistory.undo();
+            BetHistory.restoreToItem(this.latestBet);
+            this.betHistory.push(this.latestBet);
             this.renderBalance();
             this.renderBetTotal();
         })
@@ -996,38 +1148,55 @@ class Roulette {
                 }
             }
         }
+        return new BetNumber('g', 0);
     }
 
     spin() {
         this.overlay.classList.add('spinning');
         this.overlay.style.opacity = '1';
-        const winningNumber = 19;
+        const winningNumber = randNum(36);
         const betNumber = this.getBetNumber(winningNumber);
         let color;
-        if(!betNumber) {
+        if(betNumber.color === 'g') {
             color = 'green';
         } else if(betNumber.color === 'r') {
             color = 'red';
         } else {
             color = 'black';
         }
+        const wonAmount = this.calculateWonAmount(betNumber, this.getAllBetButtons()) - this.getTotalBet();
+        console.log(wonAmount);
         this.wheel.spin(winningNumber, color);
         setTimeout(() => {
             this.overlay.style.opacity = '0';
+            this.latestBet = this.betHistory.history[this.betHistory.history.length - 1];
             this.clearBets();
             this.winningNumberHistory.push(winningNumber);
             this.overlay.classList.remove('spinning');
+            this.balance += wonAmount;
+            this.displayedBalance += wonAmount;
+            this.renderBalance();
+            this.renderBetTotal();
             // this.renderWinningNumbers();
         }, TOTAL_WHEEL_ANIMATION_TIME - 500);
     }
 
+    /**
+     * 
+     * @param { BetNumber } winningNumber 
+     * @param { RouletteBetButton[] } bets 
+     */
+    calculateWonAmount(winningNumber, bets) {
+        return bets.filter(bet => bet.numbers.includes(winningNumber)).map(bet => bet.getTotalBetAmount())
+            .reduce((prev, curr) => prev + curr) * 2;
+    }
+
     doubleAmounts() {
+        if(this.getTotalBet() * 2 > this.displayedBalance) {
+            return;
+        }
         this.getAllBetButtons().forEach(button => {
-            if(button.bets.length) {
-                button.bets.forEach(bet => {
-                    button.addBet(bet);
-                })
-            }
+            button.addBet(button.getTotalBetAmount());
         })
         this.betHistory.push(
             this.getAllBetButtons().map(button => button.getHistoryData())

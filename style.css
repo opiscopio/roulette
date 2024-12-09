@@ -210,6 +210,13 @@ body {
     color: white;
 }
 
+#game-container .chip span {
+    font-weight: bold;
+    font-size: 1.2rem;
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: black;
+}
+
 #game-container .chip-button {
     position: relative;
     border-radius: 100px;
@@ -255,6 +262,12 @@ button {
 
 #game-container .wheel-container img {
     position: absolute;
+}
+
+#game-container .wheel-background {
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
 }
 
 #game-container .wheel-container.spinning img {
