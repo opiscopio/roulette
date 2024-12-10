@@ -905,10 +905,10 @@ class Roulette {
 
         this.bottomRowButtons = [
             new RouletteBetButton(this.getAllBetNumbers().slice(1, 18), '1 - 18'),
-            new RouletteBetButton(this.getAllBetNumbers().filter(num => num.number !== 0 || isEven(num.number)), 'PAR'),
+            new RouletteBetButton(this.getAllBetNumbers().filter(num => num.number !== 0 && isEven(num.number)), 'PAR'),
             new RouletteBetButton(this.getAllBetNumbers().filter(num => num.color === 'r'), 'red'),
             new RouletteBetButton(this.getAllBetNumbers().filter(num => num.color === 'b'), 'black'),
-            new RouletteBetButton(this.getAllBetNumbers().filter(num => num.number !== 0 || !isEven(num.number)), 'IMPAR'),
+            new RouletteBetButton(this.getAllBetNumbers().filter(num => num.number !== 0 && !isEven(num.number)), 'IMPAR'),
             new RouletteBetButton(this.getAllBetNumbers().slice(19, 36), '19 - 36')
         ];
 
