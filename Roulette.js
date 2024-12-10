@@ -30,7 +30,10 @@ class RouletteBetButton {
 
     rotation;
 
-    constructor(numbers, label, rotation) {
+    multiplier;
+
+    constructor(numbers, label, rotation, multiplier = 2) {
+        this.multiplier = multiplier;
         if(label || rotation) {
             this.rotation = rotation;
             this.button = document.createElement('button');
@@ -555,7 +558,7 @@ const createBetNumberButtonsForBaseTable = (betNumbersArr, sizeX, sizeY) => {
             else if(x === tableSizeX - 1 || x === 0) {
                 // If y is even, select one row
                 if(isEven(y + 1)) {
-                    button = new RouletteBetButton(betNumbersArr[(y + 1) / 2]);
+                    button = new RouletteBetButton(betNumbersArr[(y + 1) / 2], undefined, undefined, );
                 } else { // Otherwise select 2 rows
                     // The corresponding positions of the table buttons
                     const yPosition1 = (y / 2) - 1;
@@ -570,11 +573,15 @@ const createBetNumberButtonsForBaseTable = (betNumbersArr, sizeX, sizeY) => {
                     // Single number button
                     const xPosition = (x + 1) / 2 - 1;
                     const yPosition = (y + 1) / 2 - 1;
+                    console.log('single: ', xPosition, betNumberButtonsArr[yPosition][xPosition]);
                     // console.log(yPosition, xPosition);
                     // console.log(yPosition);
                     button = new RouletteBetButton([
-                        betNumbersArr[yPosition][xPosition]
-                    ]);
+                        betNumbersArr[yPosition][xPosition],
+                    ], 
+                    undefined,
+                    undefined,
+                    36);
                 } else {
                     const xPosition1 = (x + 1) / 2 - 1;
                     const xPosition2 = xPosition1 - 1;
@@ -647,7 +654,7 @@ const getTableButtonPosition = (table, buttonArrayX, buttonArrayY, buttonArraySi
     // console.log(tableWidth);
     console.log(buttonArraySizeX);
     const x = tableWidth / (buttonArraySizeY) * buttonArrayY + tableX;
-    const y = tableHeight / (buttonArraySizeX - 1) * buttonArrayX + tableY;
+    const y = tableHeight - tableHeight / (buttonArraySizeX - 1) * buttonArrayX + tableY;
     // console.log(x, y);
     return {
         x,
@@ -701,7 +708,7 @@ class Roulette {
     /**
      * @type { RouletteBetButton }
      */
-    zeroButton = new RouletteBetButton([0], '0');
+    zeroButton = new RouletteBetButton([0], '0', undefined, 36);
 
     balanceElement = this.createNumberIndicatorElement('SALDO');
     totalBetElement = this.createNumberIndicatorElement('APUESTA TOTAL')
@@ -845,14 +852,14 @@ class Roulette {
         }
 
         this.twoToOneButtons = [
-            new RouletteBetButton(this.getBetNumbersRow(0), '2:1', -90),
-            new RouletteBetButton(this.getBetNumbersRow(1), '2:1', -90),
-            new RouletteBetButton(this.getBetNumbersRow(2), '2:1', -90)
+            new RouletteBetButton(this.getBetNumbersRow(0), '2:1', -90, 3),
+            new RouletteBetButton(this.getBetNumbersRow(1), '2:1', -90, 3),
+            new RouletteBetButton(this.getBetNumbersRow(2), '2:1', -90, 3)
         ];
 
         // Create a HTML table for the numbers
         for(let y = 0; y < tableSizeY + 1; y++) {
-            for(let x = 0; x < tableSizeX; x++) {
+            for(let x = tableSizeX - 1; x >= 0; x--) {
                 const cell = document.createElement('td');
                 const cellDiv = document.createElement('div');
                 cell.append(cellDiv);
@@ -884,9 +891,9 @@ class Roulette {
         })
 
         this.columnButtons = [
-            new RouletteBetButton(this.getAllBetNumbers().slice(1, 12), '1ra 12'),
-            new RouletteBetButton(this.getAllBetNumbers().slice(13, 24), '2da 12'),
-            new RouletteBetButton(this.getAllBetNumbers().slice(25, 36), '3ra 12')
+            new RouletteBetButton(this.getAllBetNumbers().slice(1, 12), '1ra 12', 3),
+            new RouletteBetButton(this.getAllBetNumbers().slice(13, 24), '2da 12', 3),
+            new RouletteBetButton(this.getAllBetNumbers().slice(25, 36), '3ra 12', 3)
         ];
 
         const columnButtonsRow = document.createElement('tr');
@@ -904,11 +911,11 @@ class Roulette {
         table.append(columnButtonsRow);
 
         this.bottomRowButtons = [
-            new RouletteBetButton(this.getAllBetNumbers().slice(1, 18), '1 - 18'),
-            new RouletteBetButton(this.getAllBetNumbers().filter(num => num.number !== 0 && isEven(num.number)), 'PAR'),
-            new RouletteBetButton(this.getAllBetNumbers().filter(num => num.color === 'r'), 'red'),
-            new RouletteBetButton(this.getAllBetNumbers().filter(num => num.color === 'b'), 'black'),
-            new RouletteBetButton(this.getAllBetNumbers().filter(num => num.number !== 0 && !isEven(num.number)), 'IMPAR'),
+            new RouletteBetButton(this.getAllBetNumbers().slice(1, 18), '1 - 18', undefined, 2),
+            new RouletteBetButton(this.getAllBetNumbers().filter(num => num.number !== 0 && isEven(num.number)), 'PAR', undefined, 2),
+            new RouletteBetButton(this.getAllBetNumbers().filter(num => num.color === 'r'), 'red', undefined, 2),
+            new RouletteBetButton(this.getAllBetNumbers().filter(num => num.color === 'b'), 'black', undefined, 2),
+            new RouletteBetButton(this.getAllBetNumbers().filter(num => num.number !== 0 && !isEven(num.number)), 'IMPAR', undefined, 2),
             new RouletteBetButton(this.getAllBetNumbers().slice(19, 36), '19 - 36')
         ];
 
@@ -968,7 +975,7 @@ class Roulette {
 
         const buttonElements = [];
         for(let y = 0; y < buttonElementsArraySize.y; y++) {
-            for(let x = 0; x < buttonElementsArraySize.x; x++) {
+            for(let x = buttonElementsArraySize.x - 1; x >= 0; x--) {
                 const button = document.createElement('button');
                 const position = getTableButtonPosition(
                     table, 
@@ -1235,8 +1242,8 @@ class Roulette {
      * @param { RouletteBetButton[] } bets 
      */
     calculateWonAmount(winningNumber, bets) {
-        return bets.filter(bet => bet.numbers.includes(winningNumber)).map(bet => bet.getTotalBetAmount())
-            .reduce((prev, curr) => prev + curr) * 2;
+        return bets.filter(bet => bet.numbers.includes(winningNumber)).map(bet => { console.log('multiplier:', bet.multiplier); return bet.getTotalBetAmount() * bet.multiplier})
+            .reduce((prev, curr) => prev + curr);
     }
 
     doubleAmounts() {
