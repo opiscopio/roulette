@@ -609,9 +609,10 @@ const createBetNumberButtonsForBaseTable = (betNumbersArr, sizeX, sizeY) => {
                     undefined,
                     35);
                 } else {
-                    const xPosition1 = (x + 1) / 2 - 1;
-                    const xPosition2 = xPosition1 - 1;
+                    const xPosition1 = x / 2 - 1;
+                    const xPosition2 = xPosition1 + 1;
                     const yPosition = (y + 1) / 2 - 1;
+                    console.log('y, x', yPosition, xPosition1);
                     button = new RouletteBetButton([
                         betNumbersArr[yPosition][xPosition1],
                         betNumbersArr[yPosition][xPosition2]
@@ -625,7 +626,7 @@ const createBetNumberButtonsForBaseTable = (betNumbersArr, sizeX, sizeY) => {
             } else {
                 if(isEven(x + 1)) {
                     // Horizontal double
-                    const xPosition = (betNumbersArr[0].length - 1) - (((x + 1) / 2) - 1);
+                    const xPosition = (((x + 1) / 2) - 1);
                     console.log('xpos: ', xPosition);
                     const yPosition1 = (y / 2) - 1;
                     const yPosition2 = yPosition1 + 1;
@@ -1247,9 +1248,15 @@ class Roulette {
         } else {
             color = 'black';
         }
-        const wonAmount = this.calculateWonAmount(betNumber, this.getAllBetButtons()) - this.getTotalBet();
+        this.displayedBalance -= this.getTotalBet();
+        this.balance -= this.getTotalBet();
+        this.renderBalance();
+        // Win amount with initial bet
+        const wonAmountTotal = this.calculateWonAmount(betNumber, this.getAllBetButtons());
+        // Win amount without initial bet
+        const wonAmount = wonAmountTotal - this.getTotalBet();
         console.log(wonAmount);
-        this.winMessageAmount.innerHTML = numToCurrency(wonAmount);
+        this.winMessageAmount.innerHTML = numToCurrency(wonAmountTotal);
         this.wheel.spin(winningNumber, color);
         const WIN_MESSAGE_TIME = 2000;
         setTimeout(() => {
@@ -1265,8 +1272,8 @@ class Roulette {
             this.latestBet = this.betHistory.history[this.betHistory.history.length - 1];
             this.clearBets();
             this.winningNumberHistory.push(winningNumber);
-            this.balance += wonAmount;
-            this.displayedBalance += wonAmount;
+            this.balance += wonAmountTotal;
+            this.displayedBalance += wonAmountTotal;
             this.renderBalance();
             this.renderBetTotal();
             if(wonAmount > 0) {
