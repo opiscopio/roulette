@@ -1253,6 +1253,11 @@ class Roulette {
         this.wheel.spin(winningNumber, color);
         const WIN_MESSAGE_TIME = 2000;
         setTimeout(() => {
+            if(wonAmount > 0) {
+                this.winMessage.style.opacity = '1';
+            }
+        }, TOTAL_WHEEL_ANIMATION_TIME - WINNING_NUMBER_ANIMATION_TIME - 500);
+        setTimeout(() => {
             // this.overlay.style.opacity = '0';
             if(wonAmount <= 0) {
                 this.wheel.container.style.opacity = '0';
@@ -1260,23 +1265,23 @@ class Roulette {
             this.latestBet = this.betHistory.history[this.betHistory.history.length - 1];
             this.clearBets();
             this.winningNumberHistory.push(winningNumber);
-            this.overlay.classList.remove('spinning');
             this.balance += wonAmount;
             this.displayedBalance += wonAmount;
             this.renderBalance();
             this.renderBetTotal();
             if(wonAmount > 0) {
-                this.winMessage.style.opacity = '1';
+                this.overlay.style.opacity = '0';
+                this.winMessage.style.opacity = '0';
                 setTimeout(() => {
-                    this.overlay.style.opacity = '0';
-                    this.winMessage.style.opacity = '0';
                     setTimeout(() => {
+                        this.overlay.classList.remove('spinning');
                         this.wheel.container.style.opacity = '1';
-                    }, 1000);
-                }, WIN_MESSAGE_TIME);
+                    }, 2000);
+                }, WINNING_NUMBER_ANIMATION_TIME);
             } else {
                 this.overlay.style.opacity = '0';
                 this.wheel.container.style.opacity = '1';
+                this.overlay.classList.remove('spinning');
             }
             
             // this.renderWinningNumbers();
