@@ -1248,15 +1248,15 @@ class Roulette {
         } else {
             color = 'black';
         }
-        this.displayedBalance -= this.getTotalBet();
-        this.balance -= this.getTotalBet();
-        this.renderBalance();
+        // this.displayedBalance -= this.getTotalBet();
+        // this.balance -= this.getTotalBet();
+        // this.renderBalance();
         // Win amount with initial bet
         const wonAmountTotal = this.calculateWonAmount(betNumber, this.getAllBetButtons());
         // Win amount without initial bet
         const wonAmount = wonAmountTotal - this.getTotalBet();
         console.log(wonAmount);
-        this.winMessageAmount.innerHTML = numToCurrency(wonAmountTotal);
+        this.winMessageAmount.innerHTML = numToCurrency(wonAmount);
         this.wheel.spin(winningNumber, color);
         const WIN_MESSAGE_TIME = 2000;
         setTimeout(() => {
@@ -1272,8 +1272,8 @@ class Roulette {
             this.latestBet = this.betHistory.history[this.betHistory.history.length - 1];
             this.clearBets();
             this.winningNumberHistory.push(winningNumber);
-            this.balance += wonAmountTotal;
-            this.displayedBalance += wonAmountTotal;
+            this.balance += wonAmount;
+            this.displayedBalance += wonAmount;
             this.renderBalance();
             this.renderBetTotal();
             if(wonAmount > 0) {
