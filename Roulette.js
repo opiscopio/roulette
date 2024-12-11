@@ -607,7 +607,7 @@ const createBetNumberButtonsForBaseTable = (betNumbersArr, sizeX, sizeY) => {
                     ], 
                     undefined,
                     undefined,
-                    36);
+                    35);
                 } else {
                     const xPosition1 = (x + 1) / 2 - 1;
                     const xPosition2 = xPosition1 - 1;
