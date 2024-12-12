@@ -1240,7 +1240,7 @@ class Roulette {
     spin() {
         this.overlay.classList.add('spinning');
         this.overlay.style.opacity = '1';
-        const winningNumber = 0;//randNum(36);
+        const winningNumber = randNum(36);
         const betNumber = this.getBetNumber(winningNumber);
         let color;
         if(betNumber.color === 'g') {
