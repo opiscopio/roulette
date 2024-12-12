@@ -522,6 +522,9 @@ class BetHistory {
     }
 }
 
+const zeroNumber = new BetNumber('g', 0);
+
+
 /**
  * Create the array of bet buttons for base table (the reds and blacks, and the ones in between them)
  * 
@@ -538,7 +541,6 @@ const createBetNumberButtonsForBaseTable = (betNumbersArr, sizeX, sizeY) => {
      * @type { RouletteBetButton[][] }
      */
     let betNumberButtonsArr = [];
-    const zeroNumber = new BetNumber('g', 0);
     for(let y = 0; y < tableSizeY; y++) {
         betNumberButtonsArr.push([]);
         for(let x = 0; x < tableSizeX; x++) {
@@ -569,11 +571,11 @@ const createBetNumberButtonsForBaseTable = (betNumbersArr, sizeX, sizeY) => {
                     const xPosition1 = x === 0  ? 0 : (x / 2) - 1;
                     button = new RouletteBetButton([
                         zeroNumber,
-                        betNumbersArr[0][xPosition1],
+                        ...betNumbersArr[0],
                     ],
                     undefined,
                     undefined,
-                    18
+                    6
                     )
                 }
             }
@@ -607,7 +609,7 @@ const createBetNumberButtonsForBaseTable = (betNumbersArr, sizeX, sizeY) => {
                     ], 
                     undefined,
                     undefined,
-                    35);
+                    36);
                 } else {
                     const xPosition1 = x / 2 - 1;
                     const xPosition2 = xPosition1 + 1;
@@ -747,7 +749,7 @@ class Roulette {
     /**
      * @type { RouletteBetButton }
      */
-    zeroButton = new RouletteBetButton([new BetNumber('g', 0)], '0', undefined, 36);
+    zeroButton = new RouletteBetButton([zeroNumber], '0', undefined, 36);
 
     balanceElement = this.createNumberIndicatorElement('SALDO');
     totalBetElement = this.createNumberIndicatorElement('APUESTA TOTAL')
@@ -1093,7 +1095,7 @@ class Roulette {
      * @returns { BetNumber[] }
      */
     getAllBetNumbers() {
-        let betNumbers = [new BetNumber('g', 0)];
+        let betNumbers = [zeroNumber];
         for(let y = 0; y < this.betNumbers.length; y++) {
             betNumbers = betNumbers.concat(this.betNumbers[y]);
         }
@@ -1232,13 +1234,13 @@ class Roulette {
                 }
             }
         }
-        return new BetNumber('g', 0);
+        return zeroNumber;
     }
 
     spin() {
         this.overlay.classList.add('spinning');
         this.overlay.style.opacity = '1';
-        const winningNumber = randNum(36);
+        const winningNumber = 0;//randNum(36);
         const betNumber = this.getBetNumber(winningNumber);
         let color;
         if(betNumber.color === 'g') {
