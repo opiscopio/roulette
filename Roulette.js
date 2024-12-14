@@ -12,6 +12,13 @@ const nearestLowerNumberTo = (n, nums) => {
     return nums.filter(num => num <= n).reduce((prev, curr) => prev < curr ? curr : prev);
 }
 
+const sound = {
+    chip: './res/sound/chip.mp3',
+    button: './res/sound/button.mp3'
+}
+
+const playAudio = (filename) => new Audio(filename).play();
+
 class RouletteBetButton {
 
     numbers;
@@ -1170,11 +1177,14 @@ class Roulette {
                 )
                 this.renderBalance();
                 this.renderBetTotal();
+                playAudio(sound.chip);
             })
         })
 
         this.chipButtons.forEach((button) => {
             button.onClick = (amount) => {
+                if(this.betAmount === amount) return;
+                playAudio(sound.chip);
                 this.setBetAmount(amount);
                 this.makeAllChipButtonsInactive();
                 button.setActive();
@@ -1183,24 +1193,28 @@ class Roulette {
 
         
         this.clearBetButton.button.addEventListener('click', () => {
+            playAudio(sound.button);
             this.clearBets();
             this.renderBalance();
             this.renderBetTotal();
         })
 
         this.undoButton.button.addEventListener('click', () => {
+            playAudio(sound.button);
             this.betHistory.undo();
             this.renderBalance();
             this.renderBetTotal();
         })
 
         this.doubleButton.button.addEventListener('click', () => {
+            playAudio(sound.button);
             this.doubleAmounts();
             this.renderBalance();
             this.renderBetTotal();
         });
 
         this.restoreButton.button.addEventListener('click', () => {
+            playAudio(sound.button);
             BetHistory.restoreToItem(this.latestBet);
             this.betHistory.push(this.latestBet);
             this.renderBalance();
@@ -1208,6 +1222,7 @@ class Roulette {
         })
 
         this.spinButton.button.addEventListener('click', () => {
+            playAudio(sound.button);
             this.spin();
         })
 
