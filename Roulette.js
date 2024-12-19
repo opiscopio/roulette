@@ -1,3 +1,9 @@
+/**
+ * Roulette game
+ * 
+ * To add logic to when the spin button is pressed, see the .spin() method of the Roulette class
+ */
+
 class BetNumber {
     color;
     number;
@@ -19,6 +25,11 @@ const sound = {
 
 const playAudio = (filename) => new Audio(filename).play();
 
+
+/**
+ * Each bet is represented by a RouletteBetButton - a HTML button on the roulette table.
+ * it stores information such as the numbers that the bet is placed on, bet amount.
+ */
 class RouletteBetButton {
 
     numbers;
@@ -408,6 +419,7 @@ class Wheel {
         this.container.classList.add('spinning');
 
         setTimeout(() => {
+            playAudio('./res/Wheel.mp3');
             this.wheel.style.transform = 'rotate(' + (1080 + rotation) + 'deg)';
             this.ballContainer.style.transform = 'rotate(' + (-1080) + 'deg)';
             this.ball.style.transform = 'translateY(64px)';
@@ -809,16 +821,19 @@ class Roulette {
     listOverlay = document.createElement('div');
 
     /**
-     * The 'local' balance that has any bet placement amounts deducted
-     */
-    displayedBalance = this.balance;
-    /**
      * 
      * @param { HTMLElement } gameContainer 
      */
     constructor(gameContainer) {
 
-        const container = /** @type { HTMLElement } */ (gameContainer.querySelector('#game'));
+        gameContainer.classList.add('roulette-game-container');
+
+        const container = /** @type { HTMLElement } */ document.createElement('div');//(gameContainer.querySelector('#game'));
+        container.classList.add('roulette-game');
+        const dynamicContainer = /** @type { HTMLElement } */ document.createElement('div');
+        dynamicContainer.classList.add('dynamic');
+
+        gameContainer.append(container, dynamicContainer);
 
         this.muteButton.button.classList.add('mute');
         gameContainer.append(this.muteButton.button);
@@ -826,7 +841,6 @@ class Roulette {
         this.listButton.button.classList.add('list');
         gameContainer.append(this.listButton.button);
 
-        const dynamicContainer = /** @type { HTMLElement } */ (gameContainer.querySelector('#dynamic'));
 
         this.listOverlay.classList.add('overlay', 'dismissable-overlay');
         this.listOverlay.style.opacity = '0';
@@ -1136,7 +1150,6 @@ class Roulette {
     }
 
     renderBalance() {
-        // this.calculateDisplayedBalance();
         this.balanceElement.indicator.innerHTML = numToCurrency(this.balance);
     }
 
@@ -1160,15 +1173,11 @@ class Roulette {
         return betAmount;
     }   
 
-    calculateDisplayedBalance() {
-        this.displayedBalance = this.balance - this.getTotalBet();
-    }
-
     addEventListeners() {
         this.getAllBetButtons().forEach(button => {
             button.button.addEventListener('click', () => {
                 console.log(button.numbers);
-                if(this.getTotalBet() + this.betAmount > this.displayedBalance) {
+                if(this.getTotalBet() + this.betAmount > this.balance) {
                     return;
                 }
                 button.addBet(this.betAmount);
@@ -1252,9 +1261,22 @@ class Roulette {
         return zeroNumber;
     }
 
+    /**
+     * 
+     * @returns Bet buttons that have a bet placed on them
+     */
+    getButtonsWithBets() {
+        return this.getAllBetButtons().filter(button => button.getTotalBetAmount() > 0);
+    }
+
+    setBalance(balance) {
+        this.balance = balance;
+    }
+
     spin() {
         this.overlay.classList.add('spinning');
         this.overlay.style.opacity = '1';
+        // After API has been called, you can display the spin animation and set `winningNumber` to the winning number
         const winningNumber = randNum(36);
         const betNumber = this.getBetNumber(winningNumber);
         let color;
@@ -1265,7 +1287,6 @@ class Roulette {
         } else {
             color = 'black';
         }
-        // this.displayedBalance -= this.getTotalBet();
         // this.balance -= this.getTotalBet();
         // this.renderBalance();
         // Win amount with initial bet
@@ -1290,7 +1311,6 @@ class Roulette {
             this.clearBets();
             this.winningNumberHistory.push(winningNumber);
             this.balance += wonAmount;
-            this.displayedBalance += wonAmount;
             this.renderBalance();
             this.renderBetTotal();
             if(wonAmount > 0) {
@@ -1323,7 +1343,7 @@ class Roulette {
     }
 
     doubleAmounts() {
-        if(this.getTotalBet() * 2 > this.displayedBalance) {
+        if(this.getTotalBet() * 2 > this.balance) {
             return;
         }
         this.getAllBetButtons().forEach(button => {
@@ -1350,6 +1370,6 @@ class Roulette {
     }
 }
 
-const element = /** @type { HTMLElement } */ (document.getElementById('game-container'));
+const element = /** @type { HTMLElement } */ (document.getElementById('game'));
 
 const game = new Roulette(element);

@@ -39,7 +39,7 @@ body {
     margin: 0px;
 }
 
-#game .header {
+.roulette-game .header {
     width: 100%;
     display: flex;
     justify-content: space-between;
@@ -50,18 +50,18 @@ body {
     box-sizing: border-box;
 }
 
-#game-container * {
+.roulette-game-container * {
     font-family: 'Futura Md BT';
     user-select: none;
     font-weight: medium;
 }
 
-#game-container {
+.roulette-game-container {
     width: 100%;
     height: 100%;
 }
 
-#game {
+.roulette-game {
     width: 100%;
     height: 100%;
     display: flex;
@@ -76,7 +76,7 @@ body {
     /* width: fit-content; */
 }
 
-#game-container #dynamic {
+.roulette-game-container .dynamic {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -88,58 +88,58 @@ body {
     pointer-events: none;
 }
 
-#game-container #dynamic button {
+.roulette-game-container .dynamic button {
     pointer-events: all;
 }
 
-#game .chip-buttons {
+.roulette-game .chip-buttons {
     display: flex;
     gap: 16px;
 }
 
-#game .chip-buttons > button {
+.roulette-game .chip-buttons > button {
     transition: 0.2s ease-in-out;
 }
 
-#game .chip-buttons > button:hover {
+.roulette-game .chip-buttons > button:hover {
     transform: scale(1.1);
 }
 
-#game .active-chip {
+.roulette-game .active-chip {
     outline: 8px solid white;
 }
 
-#game table {
+.roulette-game table {
     z-index: 1;
     border-collapse: collapse;
 }
 
-#game table tr td {
+.roulette-game table tr td {
     border: 2px solid rgb(204, 204, 204);
 }
 
-#game .gray {
+.roulette-game .gray {
     font-size: 2rem;
     background-color: rgba(0, 0, 0, 0.4);
 }
 
-#game .gray button {
+.roulette-game .gray button {
     font-size: 1.2rem;
 }
 
-#game-container .table-extra-button { 
+.roulette-game-container .table-extra-button { 
     z-index: 99;
     font-size: 2rem;
     cursor: pointer;
     color: white;
 }
 
-#game-container .table-extra-button:focus {
+.roulette-game-container .table-extra-button:focus {
     outline: none;
     border: none;
 }
 
-#game-container .table-chip-img {
+.roulette-game-container .table-chip-img {
     position: absolute;
     left: 0px;
     top: 0px;
@@ -147,46 +147,46 @@ body {
     height: 100%;
 }
 
-#game-container .table-chip-text {
+.roulette-game-container .table-chip-text {
     position: relative;
 }
 
-#game td.side {
+.roulette-game td.side {
     width: 48px;
 }
 
-#game button {
+.roulette-game button {
     color: white;
     width: 100%;
     height: 100%;
 }
 
-#game > table td {
+.roulette-game > table td {
     width: 64px;
     height: 80px;
     font-size: 2rem;
     color: white;
 }
 
-#game .col-button {
+.roulette-game .col-button {
     height: 48px;
 }
 
-#game > table td div {
+.roulette-game > table td div {
     display: flex;
     align-items: center;
     justify-content: center;
     height: 100%;
 }
 
-#game .indicator-container {
+.roulette-game .indicator-container {
     display: flex;
     flex-direction: column;
     font-size: 1.4rem;
     align-items: center;
 }
 
-#game .indicator {
+.roulette-game .indicator {
     font-size: 2rem;
 }
 
@@ -198,35 +198,35 @@ body {
     background-color: black;
 }
 
-#game button:focus {
+.roulette-game button:focus {
     border: none;
     /* outline: none; */
 }
 
-#game button {
+.roulette-game button {
     cursor: pointer;
 }
 
-#game-container .chip {
+.roulette-game-container .chip {
     position: relative;
     z-index: 100;
     pointer-events: none;
     color: white;
 }
 
-#game-container .chip span {
+.roulette-game-container .chip span {
     font-weight: bold;
     font-size: 1.2rem;
     -webkit-text-stroke-width: 1px;
     -webkit-text-stroke-color: black;
 }
 
-#game-container .chip-button {
+.roulette-game-container .chip-button {
     position: relative;
     border-radius: 100px;
 }
 
-#game-container .chip-number {
+.roulette-game-container .chip-number {
     position: relative;
     font-weight: bold;
     font-size: 2em;
@@ -238,7 +238,7 @@ button {
     border: none;
 }
 
-#game-container .overlay {
+.roulette-game-container .overlay {
     position: absolute;
     top: 0px;
     right: 0px;
@@ -253,15 +253,15 @@ button {
     transition: all 0.4s ease-in-out;
 }
 
-#game-container .overlay.active {
+.roulette-game-container .overlay.active {
     pointer-events: all;
 }
 
-#game-container .spinning {
+.roulette-game-container .spinning {
     pointer-events: all;
 }
 
-#game-container .wheel-container {
+.roulette-game-container .wheel-container {
     position: relative;
     z-index: 500;
     width: 400px;
@@ -269,17 +269,17 @@ button {
     transition: 0.2s ease-in;
 }
 
-#game-container .wheel-container img {
+.roulette-game-container .wheel-container img {
     position: absolute;
 }
 
-#game-container .wheel-background {
+.roulette-game-container .wheel-background {
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
 }
 
-#game-container .wheel-container.spinning img {
+.roulette-game-container .wheel-container.spinning img {
     transition: 4s ease-out;
 }
 
@@ -308,7 +308,7 @@ button {
     transition: 4.4s cubic-bezier(0.835, 0.200, 0.915, -0.240);
 }
 
-#game-container .winning-numbers {
+.roulette-game-container .winning-numbers {
     list-style-type: none;
     position: absolute;
     bottom: 0px;
@@ -328,7 +328,7 @@ button {
     mask: var(--mask);
 }
 
-#game-container .winning-number {
+.roulette-game-container .winning-number {
     position: absolute;
     right: 50%;
     transform: translateX(50%);
@@ -342,25 +342,25 @@ button {
     text-align: center;
 }
 
-#game-container button.mute {
+.roulette-game-container button.mute {
     cursor: pointer;
     position: absolute;
     bottom: 14px;
     left: 14px;
 }
 
-#game-container button.list {
+.roulette-game-container button.list {
     cursor: pointer;
     position: absolute;
     right: 14px;
     bottom: 14px;
 }
 
-#game-container button.mute:focus, #game-container button.list {
+.roulette-game-container button.mute:focus, .roulette-game-container button.list {
     border: none;
 }
 
-#game-container .win-message {
+.roulette-game-container .win-message {
     background-image: url('./res/GradientYouWon.webp');
     background-size: 100% 100%;
     position: absolute;
@@ -380,7 +380,7 @@ button {
     z-index: 501;
 }
 
-#game-container .win-message .amount {
+.roulette-game-container .win-message .amount {
     font-size: 2.4rem;
 }
 
@@ -389,7 +389,7 @@ button {
 }
 
 /* 
-#game-container .winning-numbers::after {
+.roulette-game-container .winning-numbers::after {
     content: "";
     position: absolute;
     z-index: 1;
