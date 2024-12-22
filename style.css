@@ -232,7 +232,7 @@ body {
     font-size: 2em;
 }
 
-button {
+.roulette-game-container button {
     z-index: 99;
     background: transparent;
     border: none;
@@ -356,6 +356,13 @@ button {
     bottom: 14px;
 }
 
+.roulette-game-container button.leave {
+    cursor: pointer;
+    position: absolute;
+    right: 80px;
+    bottom: 14px;
+}
+
 .roulette-game-container button.mute:focus, .roulette-game-container button.list {
     border: none;
 }
@@ -386,6 +393,14 @@ button {
 
 .bet-list {
     height: 70%;
+}
+
+.roulette-menu {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
 }
 
 /* 

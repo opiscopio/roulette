@@ -4,6 +4,8 @@
  * To add logic to when the spin button is pressed, see the .spin() method of the Roulette class
  */
 
+const SERVER_URL = 'htpp://localhost:2000';
+
 class BetNumber {
     color;
     number;
@@ -23,7 +25,12 @@ const sound = {
     button: './res/sound/button.mp3'
 }
 
-const playAudio = (filename) => new Audio(filename).play();
+let soundOn = true;
+
+const playAudio = (filename) => {
+    if(!soundOn) return;
+    new Audio(filename).play()
+};
 
 
 /**
@@ -807,7 +814,9 @@ class Roulette {
     /**
      * The actual balance of the player
      */
-    balance = 100000;
+    balance = 10000;
+
+    defaultBalance = 10000;
 
     winningNumberHistory = [];
 
@@ -817,15 +826,31 @@ class Roulette {
 
     muteButton = new ToggleButton('./res/ButtonSoundON.svg', './res/ButtonSoundOFF.svg', '48px');
     listButton = new Button('./res/ButtonList.svg', 36);
+    leaveButton = new Button('./res/ButtonList.svg', 36);
 
     listOverlay = document.createElement('div');
+
+    /**
+     * Called when the user leaves the game
+     */
+    onLeave;
+
+    /** @type { HTMLTableElement } */
+    table;
+
+    mode;
+
+    socket;
 
     /**
      * 
      * @param { HTMLElement } gameContainer 
      */
-    constructor(gameContainer) {
-
+    constructor(gameContainer, mode = 'single') {
+        this.mode = mode;
+        if(mode === 'tournament') {
+            this.socket = io();
+        }
         gameContainer.classList.add('roulette-game-container');
 
         const container = /** @type { HTMLElement } */ document.createElement('div');//(gameContainer.querySelector('#game'));
@@ -840,6 +865,9 @@ class Roulette {
 
         this.listButton.button.classList.add('list');
         gameContainer.append(this.listButton.button);
+
+        this.leaveButton.button.classList.add('leave');
+        gameContainer.append(this.leaveButton.button);
 
 
         this.listOverlay.classList.add('overlay', 'dismissable-overlay');
@@ -877,13 +905,19 @@ class Roulette {
         const chipButtonsContainer = document.createElement('div');
         chipButtonsContainer.classList.add('chip-buttons');
 
-        this.chipButtons = [
-            new ChipButton(50, './res/ChipBlueLight.svg'),
-            new ChipButton(100, './res/ChipGreen.svg'),
-            new ChipButton(200, './res/ChipRed.svg'),
-            new ChipButton(500, './res/ChipBlueDark.svg'),
-            new ChipButton(1000, './res/ChipOrange.svg')
-        ]
+        if(mode === 'single') {
+            this.chipButtons = [
+                new ChipButton(50, './res/ChipBlueLight.svg'),
+                new ChipButton(100, './res/ChipGreen.svg'),
+                new ChipButton(200, './res/ChipRed.svg'),
+                new ChipButton(500, './res/ChipBlueDark.svg'),
+                new ChipButton(1000, './res/ChipOrange.svg')
+            ]
+        } else {
+            this.chipButtons = [
+                new ChipButton(100, './res/ChipGreen.svg')
+            ]            
+        }
 
         this.chipButtons.forEach(button => {
             chipButtonsContainer.append(button.button);
@@ -903,6 +937,7 @@ class Roulette {
         const baseTableButtons = createBetNumberButtonsForBaseTable(betNumbers, 3, 12);
         this.baseTableButtons = baseTableButtons;
         const table = document.createElement('table');
+        this.table = table;
 
         /**
          * @type { HTMLTableRowElement[] }
@@ -1011,12 +1046,6 @@ class Roulette {
         const zeroButtonImage = document.createElement('img');
         zeroButtonImage.src = './res/GreenPart.svg';
         zeroButtonContainer.style.position = 'absolute';
-        const bottomRows = table.querySelectorAll('tr:nth-child(n+4)');
-        const bottomRowsHeight = Array.from(bottomRows).map(row => row.clientHeight).reduce((prev, curr) => prev + curr);
-        zeroButtonImage.style.height = table.clientHeight - bottomRowsHeight + 'px';
-        console.log('table width: ', table.clientWidth);
-        zeroButtonContainer.style.right = (table.getBoundingClientRect().left + table.clientWidth) - 2 + 'px';
-        zeroButtonContainer.style.top = table.getBoundingClientRect().top + 'px';
         zeroButtonContainer.style.display = 'flex';
         zeroButtonContainer.style.alignItems = 'center';
         this.zeroButton.button.style.position = 'absolute';
@@ -1089,6 +1118,57 @@ class Roulette {
         this.renderBetTotal();
 
         this.addEventListeners();
+    }
+
+    /**
+     * Reset the game
+     */
+    restart() {
+        if(this.mode === 'tournament') {
+
+        }
+        this.clearBets();
+        this.balance = this.defaultBalance;
+        this.renderBalance();
+        // setTimeout(() => {
+            this.renderTable();
+        // }, 2000);
+    }
+
+    renderTable() {
+
+
+        const zeroButtonContainer = /** @type{ HTMLElement } */ (this.zeroButton.button.parentElement);
+        const zeroButtonImage = zeroButtonContainer.querySelector('img')
+
+        const table = this.table;
+
+        console.log(table);
+        console.log(zeroButtonContainer);
+        console.log(zeroButtonImage);
+
+        const bottomRows = table.querySelectorAll('tr:nth-child(n+4)');
+        const bottomRowsHeight = Array.from(bottomRows).map(row => row.clientHeight).reduce((prev, curr) => prev + curr);
+        zeroButtonImage.style.height = table.clientHeight - bottomRowsHeight + 'px';
+        zeroButtonContainer.style.right = (table.getBoundingClientRect().left + table.clientWidth) - 2 + 'px';
+        zeroButtonContainer.style.top = table.getBoundingClientRect().top + 'px';
+
+        const buttonElementsArraySize = getButtonsArraySize(3, 12); 
+
+        for(let y = 0; y < buttonElementsArraySize.y; y++) {
+            for(let x = buttonElementsArraySize.x - 1; x >= 0; x--) {
+                const button = this.baseTableButtons[y][x].button;//document.createElement('button');
+                const position = getTableButtonPosition(
+                    table, 
+                    x, 
+                    y, 
+                    buttonElementsArraySize.x,
+                    buttonElementsArraySize.y
+                );
+                button.style.left = position.x + 'px';
+                button.style.top = position.y + 'px';
+            }
+        }
     }
 
     createNumberIndicatorElement(label) {
@@ -1244,6 +1324,18 @@ class Roulette {
             this.listOverlay.classList.remove('active');
             this.listOverlay.style.opacity = '0';
         })
+
+        this.muteButton.button.addEventListener('click', () => {
+            soundOn = !soundOn;
+        });
+
+        this.leaveButton.button.addEventListener('click', () => {
+            if(confirm('Are you sure you want to leave?')) {
+                if(this.onLeave) {
+                    this.onLeave();
+                }
+            }
+        })
     }
 
     setBetAmount(amount) {
@@ -1369,7 +1461,3 @@ class Roulette {
         this.renderBetTotal();
     }
 }
-
-const element = /** @type { HTMLElement } */ (document.getElementById('game'));
-
-const game = new Roulette(element);

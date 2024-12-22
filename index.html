@@ -4,7 +4,17 @@
         <link rel='stylesheet' href='./style.css' />
     </head>
     <body>
-        <div id='game'>
+        <div id='menu' class='roulette-menu'>
+            <div id='modes-list'>
+                <button data-type='single'>
+                    Single
+                </button>
+                <button data-type='tournament'>
+                    Tournament
+                </button>
+            </div>
+        </div>
+        <div id='game' style='display: none;'>
             <!-- <div id='game'>
 
             </div>
@@ -12,6 +22,11 @@
 
             </div> -->
         </div>
+        <div id='tournament' style='display: none;'>
+
+        </div>
+        <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
         <script src='./Roulette.js'></script>
+        <script src='./main.js'></script>
     </body>
 </html>
