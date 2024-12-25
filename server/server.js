@@ -1,6 +1,7 @@
 // Core
 const express = require('express');
-const { createServer } = require('node:htpp');
+const cors = require('cors');
+const { createServer } = require('node:http');
 const { Server: SocketServer, Socket } = require('socket.io');
 
 // Port
@@ -8,8 +9,14 @@ const PORT = process.env.PORT || 2000;
 
 // Initialize
 const app = express();
+app.use(cors());
 const server = createServer(app);
-const io = new SocketServer(server);
+const io = new SocketServer(server, {
+    cors: {
+        origin: '*',
+        credentials: false
+    }
+});
 
 /**
  * Prefixes for socket room names
@@ -55,8 +62,13 @@ class TournamentRoom {
         }
     }
 
-    getPlayerByID(id) {
-        return this.players.find(player => player.id === id);
+    removePlayer(id) {
+        const index = this.players.findIndex(player => player.id === id);
+        this.players.splice(index, 1);
+    }
+
+    getPlayerByName(name) {
+        return this.players.find(player => player.name === name);
     }
 
     getPlayers() {
@@ -77,7 +89,7 @@ class User {
     balance;
     defaultBalance;
     betsPlaced;
-    maxBets = 30;
+    maxBets = 1;
 
     constructor(id, name, balance = 10000) {
         this.id = id;
@@ -97,7 +109,11 @@ class User {
     }
 
     areAllBetsPlaced() {
-        return this.betsPlaced < this.maxBets;
+        return this.betsPlaced >= this.maxBets;
+    }
+
+    setBetsPlaced(n) {
+        this.betsPlaced = n;
     }
 
     placeBet() {
@@ -110,6 +126,14 @@ class User {
 
     getBetsCount() {
         return this.betsPlaced;
+    }
+
+    toSocketData() {
+        return {
+            name: this.name,
+            balance: this.balance,
+            betCount: this.getBetsCount()
+        }
     }
 }
 
@@ -132,8 +156,14 @@ const joinRoom = (socket, room, player) => {
     room.addPlayer(player);
 }
 
+/**
+ * 
+ * @param { Socket } socket 
+ * @param {*} room 
+ * @param {*} player 
+ */
 const leaveRoom = (socket, room, player) => {
-    socket.leaveRoom(room.name);
+    socket.leave(room.name);
     player.reset();
 }
 
@@ -153,36 +183,62 @@ io.on('connection', (socket) => {
     let player;
     let tRoom;
 
-    socket.on('login', (msg) => {
+    socket.on('login', (msg, callback) => {
         const data = JSON.parse(msg);
-        player = new User(maxID++, data.name)
+        console.log('loggedin: ', data);
+        player = new User(maxID++, data.name);
+        callback(JSON.stringify(player.toSocketData()));
     });
 
 
     socket.on('t-user-update', (msg) => {
         const data = JSON.parse(msg);
-        const playerID = parseInt(data.player_id);
         const newBalance = parseInt(data.balance);
-        const betsPlaced = parseInt(data.betCount);
+        const betsPlaced = data.betCount;
 
-        const player = tRoom.getPlayerByID(parseInt(playerID));
+        const player = tRoom.getPlayerByName(data.name);
         player.setBalance(newBalance);
         player.setBetsPlaced(betsPlaced);
 
         if(didAllPlayersPlaceAllBets(tRoom.getPlayers())) {
+            console.log('game over');
+            console.log(tRoom.getPlayers());
+            socket.nsp.to(tRoom.name).emit("t-game-over", JSON.stringify(
+                tRoom.getPlayers().map(_player => _player.toSocketData())
+            ));
             leaveRoom(socket, tRoom, player);
             deleteRoom(tRoom);
             tRoom = null;
+        } else {
+            socket.nsp.to(tRoom.name).emit('t-user-update', JSON.stringify(player.toSocketData()));
         }
     })
 
-    socket.on('t-join', () => {
-        tRoom = tournamentRooms.find(room => isSeatAvailable()) || 
-        new TournamentRoom(roomName('tournament', maxID++));
-        joinRoom(room);
+    socket.on('t-join', (msg, callback) => {
+        console.log('joined');
+        tRoom = tournamentRooms.find(room => room.isSeatAvailable()); 
+
+        if(!tRoom) {
+            tRoom = new TournamentRoom(roomName('tournament', maxID++));
+            tournamentRooms.push(tRoom);
+        }
+
+        joinRoom(socket, tRoom, player);
+        console.log(tRoom);
+        console.log(msg);
+        socket.broadcast.to(tRoom.name).emit('t-join', msg);
+        callback(JSON.stringify(
+            tRoom.getPlayers().map(player => player.toSocketData())
+        ));
+    })
+
+    socket.on('disconnect', () => {
+        if(tRoom && player) {
+            tRoom.removePlayer(player);
+        }
     })
 })
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log('server listening on ' + PORT);   
 })

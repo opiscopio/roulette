@@ -1,9 +1,31 @@
+import { MusicPlayer } from './classes/MusicPlayer.js';
+import { Player } from './classes/Player.js';
+import { Roulette } from './classes/Roulette.js';
+import { TournamentRoulette } from './classes/TournamentRoulette.js';
+
 const element = /** @type { HTMLElement } */ (document.getElementById('game'));
 const tournamentElement =  /** @type { HTMLElement } */ (document.getElementById('tournament'));
 const menu = /** @type { HTMLElement } */ (document.getElementById('menu'));
 
 const singleGame = new Roulette(element);
-const tournamentGame = new Roulette(tournamentElement, 'tournament');
+const tournamentGame = new TournamentRoulette(tournamentElement);
+
+const nameInput = /** @type { HTMLInputElement } */ (document.getElementById('name-input'));
+
+const music = new MusicPlayer([
+    './res/music/background-biscuit-bliss.mp3',
+    './res/music/background-jazz.mp3'
+]);
+
+
+music.repeat = true;
+
+const initialClickListener = () => {
+    music.playSong(0);
+    document.removeEventListener('click', initialClickListener);
+}
+
+document.addEventListener('click', initialClickListener);
 
 const showSection = (_element) => {
     let elements = [
@@ -38,9 +60,19 @@ const modes = {
     },
     tournament: {
         onStart: () => {
-            showSection(tournamentElement);
+            console.log(nameInput.value);
+            const player = new Player(
+                nameInput.value,
+                5
+            );
             // setTimeout(() => {
+            tournamentGame.setCurrentPlayer(player);
+            tournamentGame.login(player).then(() => {
+                showSection(tournamentElement);
                 tournamentGame.restart();
+            }).catch(() => {
+                alert('Could not connect');
+            });
             // }, 200)
         }
     }

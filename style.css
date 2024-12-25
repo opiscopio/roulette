@@ -40,6 +40,7 @@ body {
 }
 
 .roulette-game .header {
+    position: relative;
     width: 100%;
     display: flex;
     justify-content: space-between;
@@ -48,6 +49,10 @@ body {
     font-size: 2rem;
     padding-inline: 80px;
     box-sizing: border-box;
+}
+
+.roulette-game .header-nav {
+    padding: 0px;
 }
 
 .roulette-game-container * {
@@ -391,8 +396,76 @@ body {
     font-size: 2.4rem;
 }
 
+.roulette-game-container .scoreboard {
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 2px solid goldenrod;
+    padding: 16px;
+    border-radius: 16px;
+    position: absolute;
+    max-width: 140px;
+    width: 100%;
+    left: 48px;
+    top: 128px;
+    list-style-type: none;
+    color: white;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.roulette-game-container .scoreboard .divider {
+    width: 50%;
+    height: 1px;
+    border-bottom: 1px solid gray;
+}
+
+.roulette-game-container .scoreboard li {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.roulette-game-container .scoreboard .name {
+    display: flex;
+}
+
+.roulette-game-container .scoreboard .balance {
+    display: flex;
+    justify-content: center;
+    color: goldenrod;
+    font-size: 1.4rem;
+}
+
 .bet-list {
     height: 70%;
+}
+
+.roulette-game-container .bet-count {
+    position: absolute;
+    right: 0px;
+    top: calc(50% - 10px);
+    transform: translate(calc(100% + 16px), -50%);
+    /* top: 48px; */
+}
+
+.roulette-game-container .game-over-message {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: darkgreen;
+    padding: 64px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 16px;
+    color: white;
+    font-size: 2rem;
+    z-index: 1000;
 }
 
 .roulette-menu {

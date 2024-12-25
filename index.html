@@ -5,14 +5,21 @@
     </head>
     <body>
         <div id='menu' class='roulette-menu'>
-            <div id='modes-list'>
+            <div id='modes-list' style='display: flex; gap: 4px'>
                 <button data-type='single'>
                     Single
                 </button>
-                <button data-type='tournament'>
-                    Tournament
-                </button>
+                <div style='display: flex; flex-direction: column;'>
+                    <div id='login'>
+                        <input id='name-input' placeholder='Username' />
+                    </div>
+                    <button data-type='tournament'>
+                        Tournament
+                    </button>
+                </div>
+                
             </div>
+            
         </div>
         <div id='game' style='display: none;'>
             <!-- <div id='game'>
@@ -25,8 +32,19 @@
         <div id='tournament' style='display: none;'>
 
         </div>
-        <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
-        <script src='./Roulette.js'></script>
-        <script src='./main.js'></script>
+        <script type='module' src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+        <script type='module' src='./classes/util.js'></script>
+        <script type='module' src='./classes/Player.js'></script>
+        <script type='module' src='./classes/Button.js'></script>
+        <script type='module' src='./classes/ChipButton.js'></script>
+        <script type='module' src='./classes/Connection.js'></script>
+        <script type='module' src='./classes/BetHistory.js'></script>
+        <script type='module' src='./classes/BetNumber.js'></script>
+        <script type='module' src='./classes/RouletteBetButton.js'></script>
+        <script type='module' src='./classes/ToggleButton.js'></script>
+        <script type='module' src='./classes/Wheel.js'></script>
+        <script type='module' src='./classes/Roulette.js'></script>
+        <script type='module' src='./classes/TournamentRoulette.js'></script>
+        <script type='module' src='./main.js'></script>
     </body>
 </html>
