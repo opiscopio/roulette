@@ -2,6 +2,7 @@ export class MusicPlayer {
 
     queue = [];
     currentlyPlaying = 0;
+    playing = false;
 
     repeat = true;
 
@@ -25,11 +26,13 @@ export class MusicPlayer {
     }
 
     pause() {
+        this.playing = false;
         console.log('pausing');
         this.songs[this.currentlyPlaying].pause();
     }
 
     play() {
+        this.playing = true;
         this.songs[this.currentlyPlaying].play();
     }
 
@@ -40,6 +43,7 @@ export class MusicPlayer {
     }
 
     playSong(index) {
+        this.playing = true;
         this.currentlyPlaying = index;
         this.songs[index].play();
     }

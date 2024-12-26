@@ -354,6 +354,13 @@ body {
     left: 14px;
 }
 
+.roulette-game-container button.mute-music {
+    cursor: pointer;
+    position: absolute;
+    bottom: 14px;
+    left: 80px;
+}
+
 .roulette-game-container button.list {
     cursor: pointer;
     position: absolute;
@@ -451,21 +458,52 @@ body {
     /* top: 48px; */
 }
 
-.roulette-game-container .game-over-message {
+.roulette-game-container .game-over-message-container {
     display: none;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background-color: darkgreen;
-    padding: 64px;
+    /* padding-block: 24px; */
+    /* padding-inline: 128px; */
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    width: 100vw;
+    height: 100vh;
     border-radius: 16px;
     color: white;
     font-size: 2rem;
     z-index: 1000;
+    gap: 16px;
+}
+
+.roulette-game-container .game-over-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-block: 24px;
+    padding-inline: 128px;
+    background: url('./res/GradientWinner.webp');
+    background-size: 100% 100%;
+}
+
+.roulette-game-container .game-over-message .winner {
+    font-weight: bold;
+}
+
+.roulette-game-container .game-over-message-container .play-again-button {
+    border: 1px solid goldenrod;
+    padding: 12px;
+    color: goldenrod;
+    font-weight: bold;
+    padding-block: 4px;
+    font-size: 1.2rem;
+    background-color: rgba(25, 25, 25);
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.roulette-game-container .game-over-message-container .play-again-button:hover {
+    outline: 2px solid rgba(218, 165, 32, 0.8);
 }
 
 .roulette-menu {

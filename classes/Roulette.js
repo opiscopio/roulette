@@ -104,8 +104,9 @@ class Roulette {
     winningNumbersList = document.createElement('ul');
 
     muteButton = new ToggleButton('./res/ButtonSoundON.svg', './res/ButtonSoundOFF.svg', '48px');
+    musicButton = new ToggleButton('./res/ButtonMusicON.svg', './res/ButtonMusicOFF.svg', '48px');
     listButton = new Button('./res/ButtonList.svg', 36);
-    leaveButton = new Button('./res/ButtonList.svg', 36);
+    leaveButton = new Button('./res/ButtonExit.svg', 36);
 
     listOverlay = document.createElement('div');
 
@@ -151,6 +152,9 @@ class Roulette {
 
         this.muteButton.button.classList.add('mute');
         gameContainer.append(this.muteButton.button);
+
+        this.musicButton.button.classList.add('mute-music');
+        gameContainer.append(this.musicButton.button);
 
         this.listButton.button.classList.add('list');
         gameContainer.append(this.listButton.button);
@@ -616,11 +620,14 @@ class Roulette {
 
         this.muteButton.button.addEventListener('click', () => {
             state.soundOn = !state.soundOn;
-            if(state.soundOn) {
-                this.musicPlayer.play();
-            } else {
+        });
+
+        this.musicButton.button.addEventListener('click', () => {
+            if(this.musicPlayer.playing) {
                 this.musicPlayer.pause();
-            }
+            } else {
+                this.musicPlayer.play();
+            }   
         });
 
         this.leaveButton.button.addEventListener('click', () => {

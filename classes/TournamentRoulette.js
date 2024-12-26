@@ -11,8 +11,11 @@ export class TournamentRoulette extends Roulette {
 
     scoreboard = document.createElement('ul');
     betCountElement = document.createElement('span');
-    maxBets = 10;
+    maxBets = window.location.href.includes('localhost') ? 1 : 10;
     gameOverMessageElement = document.createElement('div');
+    gameOverMessageContainer = document.createElement('div');
+    gameOverMessage = document.createElement('span');
+    playAgainButton = document.createElement('button');
 
     onConnect;
 
@@ -151,22 +154,38 @@ export class TournamentRoulette extends Roulette {
 
     initGameOverMessageElement() {
         this.gameOverMessageElement.classList.add('game-over-message');
-        const leaveButton = document.createElement('button');
-        this.gameOverMessageElement.append(leaveButton);
-        this.container.append(this.gameOverMessageElement);
+        this.gameOverMessageContainer.append(this.gameOverMessageElement);
+        this.gameOverMessageContainer.classList.add('game-over-message-container');
+        const subtitleElement = document.createElement('span');
+        subtitleElement.classList.add('subtitle');
+        subtitleElement.innerHTML = 'Ha ganado el torneo';
+        this.gameOverMessage.classList.add('winner');
+        this.gameOverMessageElement.append(this.gameOverMessage);
+        this.gameOverMessageElement.append(subtitleElement);
+        this.playAgainButton.innerHTML = 'NUEVO TURNEO';
+        this.gameOverMessageContainer.append(this.playAgainButton);
+        this.playAgainButton.classList.add('play-again-button');
+        this.container.append(this.gameOverMessageContainer);
+        this.playAgainButton.addEventListener('click', () => {
+            this.loadingScreen.setLoadedAmount(0);
+            this.container.style.display = 'none';
+            this.loadingScreen.show();
+            this.restart();
+        })
     }
 
     displayGameOverMessageElement(player) {
-        this.gameOverMessageElement.innerHTML = player.name + ' won';
-        this.gameOverMessageElement.style.opacity = '0';
-        this.gameOverMessageElement.style.display = 'flex';
+        // this.gameOverMessageElement.innerHTML = player.name + ' won';
+        this.gameOverMessage.innerHTML = player.name;
+        this.gameOverMessageContainer.style.opacity = '0';
+        this.gameOverMessageContainer.style.display = 'flex';
         setTimeout(() => {
-            this.gameOverMessageElement.style.opacity = '1';
+            this.gameOverMessageContainer.style.opacity = '1';
         }, 50);
     }
 
     hideGameOverMessageElement() {
-        this.gameOverMessageElement.style.display = 'none';
+        this.gameOverMessageContainer.style.display = 'none';
     }
 
     getPlayerListItem(player) {

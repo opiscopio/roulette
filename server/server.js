@@ -6,6 +6,7 @@ const { Server: SocketServer, Socket } = require('socket.io');
 
 // Port
 const PORT = process.env.PORT || 2000;
+const MAX_BETS = process.env.MAX_BETS || 1;
 
 // Initialize
 const app = express();
@@ -89,7 +90,7 @@ class User {
     balance;
     defaultBalance;
     betsPlaced;
-    maxBets = 10;
+    maxBets = MAX_BETS;
 
     constructor(id, name, balance = 10000) {
         this.id = id;
