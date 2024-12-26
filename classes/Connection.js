@@ -90,7 +90,7 @@ class RouletteConnection {
     }
 }
 
-const SERVER_URL = 'http://localhost:2000';
+const SERVER_URL = 'https://roulette-pk20.onrender.com';
 
 class RouletteSocketConnection extends RouletteConnection {
 
