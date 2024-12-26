@@ -11,7 +11,7 @@ export class TournamentRoulette extends Roulette {
 
     scoreboard = document.createElement('ul');
     betCountElement = document.createElement('span');
-    maxBets = 1;
+    maxBets = 5;
     gameOverMessageElement = document.createElement('div');
 
     onConnect;

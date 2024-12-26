@@ -90,7 +90,7 @@ class RouletteConnection {
     }
 }
 
-const SERVER_URL = 'https://roulette-pk20.onrender.com';
+const SERVER_URL = window.location.href.includes('localhost') ? 'http://localhost:2000' : 'https://roulette-pk20.onrender.com';
 
 class RouletteSocketConnection extends RouletteConnection {
 

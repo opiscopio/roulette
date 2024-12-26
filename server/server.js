@@ -89,7 +89,7 @@ class User {
     balance;
     defaultBalance;
     betsPlaced;
-    maxBets = 1;
+    maxBets = 10;
 
     constructor(id, name, balance = 10000) {
         this.id = id;
