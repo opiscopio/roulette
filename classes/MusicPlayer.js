@@ -24,6 +24,15 @@ export class MusicPlayer {
         this.playSong(actualNextIndex);
     }
 
+    pause() {
+        console.log('pausing');
+        this.songs[this.currentlyPlaying].pause();
+    }
+
+    play() {
+        this.songs[this.currentlyPlaying].play();
+    }
+
     onEnded() {
         if(this.repeat) {
             this.playNextSong();

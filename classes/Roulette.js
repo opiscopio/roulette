@@ -122,6 +122,8 @@ class Roulette {
 
     events = new MyEvents(['afterConstruct', 'afterSpin'])
 
+    musicPlayer;
+
     /**
      * @typedef { Object } RouletteOptions
      * @param { ChipButton[] } chipButtons
@@ -132,8 +134,10 @@ class Roulette {
      * @param { HTMLElement } gameContainer 
      * @param { RouletteOptions } options
      */
-    constructor(gameContainer, options = {}) {
+    constructor(gameContainer, musicPlayer, options = {}) {
         
+        this.musicPlayer = musicPlayer;
+
         this.container = gameContainer;
         gameContainer.classList.add('roulette-game-container');
         
@@ -608,6 +612,11 @@ class Roulette {
 
         this.muteButton.button.addEventListener('click', () => {
             state.soundOn = !state.soundOn;
+            if(state.soundOn) {
+                this.musicPlayer.play();
+            } else {
+                this.musicPlayer.pause();
+            }
         });
 
         this.leaveButton.button.addEventListener('click', () => {

@@ -32,11 +32,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     showSection(menu);
 })
 
-const singleGame = new Roulette(element);
-const tournamentGame = new TournamentRoulette(tournamentElement, null, loadingScreen);
-
-const nameInput = /** @type { HTMLInputElement } */ (document.getElementById('name-input'));
-
 const music = new MusicPlayer([
     './res/music/background-biscuit-bliss.mp3',
     './res/music/background-jazz.mp3'
@@ -44,6 +39,13 @@ const music = new MusicPlayer([
 
 
 music.repeat = true;
+
+const singleGame = new Roulette(element, music);
+const tournamentGame = new TournamentRoulette(tournamentElement, music, null, loadingScreen);
+
+const nameInput = /** @type { HTMLInputElement } */ (document.getElementById('name-input'));
+
+
 
 const initialClickListener = () => {
     music.playSong(0);

@@ -21,8 +21,8 @@ export class TournamentRoulette extends Roulette {
      */
     loadingScreen;
 
-    constructor(gameContainer, onConnect, loadingScreen) {
-        super(gameContainer, {
+    constructor(gameContainer, musicPlayer, onConnect, loadingScreen) {
+        super(gameContainer, musicPlayer, {
             chipButtons: [new ChipButton(100, './res/ChipGreen.svg')]
         });
         
