@@ -7,6 +7,7 @@ class ChipButton {
     button;
 
     constructor(amount, imageURL) {
+        this.amount = amount;
         const SIZE_PX = 104;
         const button = document.createElement('button');
         button.classList.add('chip-button');

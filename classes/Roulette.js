@@ -203,6 +203,10 @@ class Roulette {
             new ChipButton(1000, './res/ChipOrange.svg')
         ];
 
+        this.betAmount = this.chipButtons[0].amount;
+
+        console.log(this.chipButtons);
+
         this.chipButtons.forEach(button => {
             chipButtonsContainer.append(button.button);
         })
