@@ -472,7 +472,7 @@ body {
     color: white;
     font-size: 2rem;
     z-index: 1000;
-    gap: 16px;
+    gap: 24px;
 }
 
 .roulette-game-container .game-over-message {
