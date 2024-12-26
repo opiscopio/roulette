@@ -442,6 +442,7 @@ class Roulette {
                 );
                 button.style.left = position.x + 'px';
                 button.style.top = position.y + 'px';
+                const chip = this.baseTableButtons[y][x].renderChip();
             }
         }
     }
@@ -528,6 +529,12 @@ class Roulette {
     }   
 
     addEventListeners() {
+        window.addEventListener('resize', () => {
+            setTimeout(() => {
+                console.log('rendering table');
+                this.renderTable();
+            }, 20);
+        })
         this.getAllBetButtons().forEach(button => {
             button.button.addEventListener('click', () => {
                 console.log(button.numbers);

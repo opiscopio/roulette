@@ -108,8 +108,14 @@ class RouletteSocketConnection extends RouletteConnection {
     /**
      * Initialize socket connection
      */
-    init() {
+    init(onConnect) {
         this.socket = io(SERVER_URL);
+        if(this.socket.connected && onConnect) {
+            onConnect();
+        }
+        this.socket.on('connect', () => {
+            onConnect();
+        })
         this.eventNames.forEach(name => {
             this.socket.on(name, this.socketListener(name));
         })

@@ -1,3 +1,4 @@
+import { LoadingScreen } from './classes/LoadingScreen.js';
 import { MusicPlayer } from './classes/MusicPlayer.js';
 import { Player } from './classes/Player.js';
 import { Roulette } from './classes/Roulette.js';
@@ -6,9 +7,33 @@ import { TournamentRoulette } from './classes/TournamentRoulette.js';
 const element = /** @type { HTMLElement } */ (document.getElementById('game'));
 const tournamentElement =  /** @type { HTMLElement } */ (document.getElementById('tournament'));
 const menu = /** @type { HTMLElement } */ (document.getElementById('menu'));
+const loadingScreenElement = /** @type { HTMLElement } */ (document.getElementById('loading-screen'));
+
+const loadingScreen = new LoadingScreen('./res/Logo.svg', loadingScreenElement);
+
+const showSection = (_element) => {
+    let elements = [
+        menu,
+        tournamentElement,
+        element
+    ]
+
+    elements = elements.filter(__element => __element !== _element); 
+    elements.forEach((__element) => {
+        __element.style.display = 'none';
+    })
+    _element.style.display = 'flex';
+}
+
+showSection(loadingScreenElement);
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadingScreen.setLoadedAmount(1);
+    loadingScreen.hide();
+    showSection(menu);
+})
 
 const singleGame = new Roulette(element);
-const tournamentGame = new TournamentRoulette(tournamentElement);
+const tournamentGame = new TournamentRoulette(tournamentElement, null, loadingScreen);
 
 const nameInput = /** @type { HTMLInputElement } */ (document.getElementById('name-input'));
 
@@ -27,19 +52,7 @@ const initialClickListener = () => {
 
 document.addEventListener('click', initialClickListener);
 
-const showSection = (_element) => {
-    let elements = [
-        menu,
-        tournamentElement,
-        element
-    ]
 
-    elements = elements.filter(__element => __element !== _element); 
-    elements.forEach((__element) => {
-        __element.style.display = 'none';
-    })
-    _element.style.display = 'flex';
-}
 
 singleGame.onLeave = () => {
     showSection(menu);
@@ -60,6 +73,10 @@ const modes = {
     },
     tournament: {
         onStart: () => {
+            if(!nameInput.value) {
+                nameInput.reportValidity();
+                return;
+            }
             console.log(nameInput.value);
             const player = new Player(
                 nameInput.value,
@@ -67,8 +84,8 @@ const modes = {
             );
             // setTimeout(() => {
             tournamentGame.setCurrentPlayer(player);
+            showSection(tournamentElement);
             tournamentGame.login(player).then(() => {
-                showSection(tournamentElement);
                 tournamentGame.restart();
             }).catch(() => {
                 alert('Could not connect');

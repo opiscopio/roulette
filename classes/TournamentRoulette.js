@@ -1,5 +1,6 @@
 import { ChipButton } from './ChipButton.js';
 import { RouletteSocketConnection } from './Connection.js';
+import { LoadingScreen } from './LoadingScreen.js';
 import { Player } from './Player.js';
 import { Roulette } from './Roulette.js';
 import { numToCurrency } from './util.js';
@@ -13,11 +14,21 @@ export class TournamentRoulette extends Roulette {
     maxBets = 1;
     gameOverMessageElement = document.createElement('div');
 
-    constructor(gameContainer) {
+    onConnect;
+
+    /**
+     * @type { LoadingScreen }
+     */
+    loadingScreen;
+
+    constructor(gameContainer, onConnect, loadingScreen) {
         super(gameContainer, {
             chipButtons: [new ChipButton(100, './res/ChipGreen.svg')]
         });
         
+        gameContainer.style.display = 'none';
+        this.loadingScreen = loadingScreen;
+        this.onConnect = onConnect;
         this.initBetCount();
         this.initScoreboard();
         this.initGameOverMessageElement();
@@ -38,12 +49,16 @@ export class TournamentRoulette extends Roulette {
 
     restart() {
         this.hideGameOverMessageElement();
-        connection.emitJoinEvent().then(() => {
+        connection.emitJoinEvent().then(async () => {
             console.log('emitting join event: ', connection.player);
             this.setDefaultBalance(connection.player.balance);
             this.renderPlayerBetCount(connection.player.betCount);
             this.renderPlayers();
+            await this.loadingScreen.setLoadedAmount(1);
+            this.loadingScreen.hide();
+            this.container.style.display = 'flex';
             super.restart();
+
         });
     }
 
@@ -51,11 +66,15 @@ export class TournamentRoulette extends Roulette {
      * Log in the player and make roulette data match the player's data
      * @param {*} player 
      */
-    login(player) {
+    async login(player) {
+        this.container.style.display = 'none';
+        this.loadingScreen.setLoadedAmount(0);
+        await this.loadingScreen.show();
+        this.loadingScreen.setLoadedAmount(0.2);
         return new Promise((resolve, reject) => {
-            connection.init();
-            connection.emitLoginEvent(player).then(player => {
-                console.log('after login: ', player);
+            connection.init(this.onConnect);
+            connection.emitLoginEvent(player).then(async (player) => {
+                await this.loadingScreen.setLoadedAmount(0.5);
                 this.setBalance(player.balance);
                 resolve(true);
             }).catch(() => {

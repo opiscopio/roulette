@@ -474,6 +474,66 @@ body {
     height: 100vh;
     align-items: center;
     justify-content: center;
+    background-color: black;
+}
+
+#modes-list {
+    display: flex;
+    align-items: flex-start;
+}
+
+.roulette-menu button {
+    background-color: transparent;
+    border: none;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px;
+    justify-content: center;
+}
+
+.roulette-menu button:hover {
+    outline: 2px solid white;
+}
+
+.roulette-menu input {
+    width: 100%;
+    height: 32px;
+    padding-left: 8px;
+    box-sizing: border-box;
+    background-color: rgb(101, 101, 101);
+    color: white;
+    border: none;
+    border-radius: 8px;
+}
+
+.roulette-menu input::placeholder {
+    color: rgb(186, 186, 186);
+}
+
+.loading-screen-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: black;
+    width: 100vw;
+    height: 100vh;
+}
+
+.loading-screen-container .bar-container {
+    width: 240px;
+}
+
+.loading-screen-container .bar {
+    border-bottom: 2px solid white;
+    transition: 1s ease-in-out;
+}
+
+.loading-screen-container .logo {
+    width: 240px;
 }
 
 /* 

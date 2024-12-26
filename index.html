@@ -7,15 +7,15 @@
         <div id='menu' class='roulette-menu'>
             <div id='modes-list' style='display: flex; gap: 4px'>
                 <button data-type='single'>
-                    Single
+                    <img src='./res/ThumbnailSingle.webp' width='250'/>
                 </button>
-                <div style='display: flex; flex-direction: column;'>
-                    <div id='login'>
-                        <input id='name-input' placeholder='Username' />
-                    </div>
+                <div style='display: flex; flex-direction: column; width: fit-content'>
                     <button data-type='tournament'>
-                        Tournament
+                        <img src='./res/ThumbnailTournament.webp' width='250'/>
                     </button>
+                    <div id='login'>
+                        <input id='name-input' placeholder='Username' required/>
+                    </div>
                 </div>
                 
             </div>
@@ -30,6 +30,9 @@
             </div> -->
         </div>
         <div id='tournament' style='display: none;'>
+
+        </div>
+        <div id='loading-screen'>
 
         </div>
         <script type='module' src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
