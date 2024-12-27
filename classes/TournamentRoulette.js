@@ -128,7 +128,8 @@ export class TournamentRoulette extends Roulette {
 
     onGameOver(msg) {
         const players = JSON.parse(msg);
-        console.log(players);
+        connection.playersFromSocketData(players);
+        this.renderPlayers();
         const winner = players.reduce((a, b) => a.balance > b.balance ? a : b);
         this.displayGameOverMessageElement(winner);
     }

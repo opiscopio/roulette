@@ -133,11 +133,15 @@ class RouletteSocketConnection extends RouletteConnection {
                 // Data of all players in the newly joined room
                 const data = JSON.parse(res);
                 console.log('data: ', data);
-                this.players = data.map(player => new Player(player.name, player.balance));
-                this.player = this.players.find(_player => _player.name === this.player.name);
+                this.playersFromSocketData(data);
                 resolve(data);
             });
         })
+    }
+
+    playersFromSocketData(data) {
+        this.players = data.map(player => new Player(player.name, player.balance));
+        this.player = this.players.find(_player => _player.name === this.player.name);
     }
 
     async emitLoginEvent(player) {
