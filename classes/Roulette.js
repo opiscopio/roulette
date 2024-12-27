@@ -121,7 +121,7 @@ class Roulette {
     /** @type { HTMLElement } */
     container;
 
-    events = new MyEvents(['afterConstruct', 'afterSpin'])
+    events = new MyEvents(['afterConstruct', 'afterSpin', 'onLeave']);
 
     musicPlayer;
 
@@ -632,9 +632,7 @@ class Roulette {
 
         this.leaveButton.button.addEventListener('click', () => {
             if(confirm('Are you sure you want to leave?')) {
-                if(this.onLeave) {
-                    this.onLeave();
-                }
+                this.events.callEvent('onLeave');
             }
         })
     }

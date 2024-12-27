@@ -11,7 +11,7 @@ export class TournamentRoulette extends Roulette {
 
     scoreboard = document.createElement('ul');
     betCountElement = document.createElement('span');
-    maxBets = window.location.href.includes('localhost') ? 1 : 10;
+    maxBets = window.location.href.includes('localhost') ? 4 : 10;
     gameOverMessageElement = document.createElement('div');
     gameOverMessageContainer = document.createElement('div');
     gameOverMessage = document.createElement('span');
@@ -58,6 +58,7 @@ export class TournamentRoulette extends Roulette {
         this.hideGameOverMessageElement();
         connection.emitJoinEvent().then(async () => {
             console.log('emitting join event: ', connection.player);
+            this.enableBetButtons();
             this.setDefaultBalance(connection.player.balance);
             this.renderPlayerBetCount(connection.player.betCount);
             this.renderPlayers();
@@ -102,6 +103,13 @@ export class TournamentRoulette extends Roulette {
         console.log('incrementing');
         connection.player.betCount++;
         this.renderPlayerBetCount(connection.player.betCount);
+        if(this.maxBetsReached()) {
+            this.disableBetButtons();
+        }
+    }
+
+    maxBetsReached() {
+        return connection.player.betCount >= this.maxBets;
     }
 
     // emitJoinEvent() {
@@ -128,6 +136,17 @@ export class TournamentRoulette extends Roulette {
         player.name = data.name;
         this.renderPlayers();
         // this.renderPlayerBetCount(player.betCount);
+    }
+
+    /**
+     * Called when player leaves room
+     * @param { string } msg player data 
+     */
+    onPlayerLeave(msg) {
+        console.log('player left');
+        const player = JSON.parse(msg);
+        connection.players = connection.players.filter(p => p.name !== player.name);
+        this.renderPlayers();
     }
 
     onGameOver(msg) {
@@ -207,6 +226,18 @@ export class TournamentRoulette extends Roulette {
         })
     }
 
+    disableBetButtons() {
+        this.getAllBetButtons().forEach(button => {
+            button.button.disabled = true;
+        })
+    }
+
+    enableBetButtons() {
+        this.getAllBetButtons().forEach(button => {
+            button.button.disabled = false;
+        })
+    }
+
     displayGameOverMessageElement(player) {
         // this.gameOverMessageElement.innerHTML = player.name + ' won';
         this.gameOverMessage.innerHTML = player.name;
@@ -247,13 +278,24 @@ export class TournamentRoulette extends Roulette {
             }
         })
     }
+
+    spin() {
+        if(connection.player.betCount >= this.maxBets) {
+            alert('Has alcanzado el límite de apuesta.');
+            return;
+        }
+        super.spin();
+    }
     
     addEventListeners() {
         // Add custom event so main.js can listen for when leaving game
-        this.events['leave'] = {};
+        this.events.on('onLeave', () => {
+            connection.emitLeaveEvent();
+        });
         connection.onPlayerJoin(this.onPlayerJoin.bind(this));
         connection.onPlayerUpdate(this.onPlayerUpdate.bind(this));
         connection.onGameOver(this.onGameOver.bind(this));
+        connection.onPlayerLeave(this.onPlayerLeave.bind(this));
         this.events.on('afterSpin', this.incrementPlayerBetCount.bind(this));
         this.events.on('afterSpin', this.emitPlayerData.bind(this));
         super.addEventListeners();

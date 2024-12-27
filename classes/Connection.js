@@ -14,7 +14,8 @@ class RouletteConnection {
     events = {
         't-join': {},
         't-user-update': {},
-        't-game-over': {}
+        't-game-over': {},
+        't-leave': {}
     };
     maxID = 0;
 
@@ -55,6 +56,10 @@ class RouletteConnection {
         return this.addEventListener('t-game-over', callback);
     }
 
+    onPlayerLeave(callback) {
+        return this.addEventListener('t-leave', callback);
+    }
+
     addEventListener(event, callback) {
         const id = this.maxID++;
         this.events[event][id] = callback;
@@ -81,6 +86,15 @@ class RouletteConnection {
     /**
      * @abstract
      * 
+     * @returns { Promise<boolean> }
+     */
+    emitLeaveEvent() {
+        throw new Error('Abstract method');
+    }
+
+    /**
+     * @abstract
+     * 
      * @param { PlayerData } data 
      * 
      * @returns { Promise<boolean> }
@@ -102,7 +116,8 @@ class RouletteSocketConnection extends RouletteConnection {
     eventNames = [
         't-join',
         't-user-update',
-        't-game-over'
+        't-game-over',
+        't-leave'
     ]
 
     /**
@@ -136,6 +151,14 @@ class RouletteSocketConnection extends RouletteConnection {
                 this.playersFromSocketData(data);
                 resolve(data);
             });
+        })
+    }
+
+    emitLeaveEvent() {
+        console.log('emitting leave event');
+        return new Promise((resolve) => {
+            this.socket.emit('t-leave', JSON.stringify(this.player.toSocketData()));
+            resolve(true);
         })
     }
 

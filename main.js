@@ -56,13 +56,13 @@ document.addEventListener('click', initialClickListener);
 
 
 
-singleGame.onLeave = () => {
+singleGame.events.on('onLeave', () => {
     showSection(menu);
-};
+});
 
-tournamentGame.onLeave = () => {
+tournamentGame.events.on('onLeave', () => {
     showSection(menu);
-};
+});
 
 const modes = {
     single: {

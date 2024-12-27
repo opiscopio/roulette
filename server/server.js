@@ -6,7 +6,7 @@ const { Server: SocketServer, Socket } = require('socket.io');
 
 // Port
 const PORT = process.env.PORT || 2000;
-const MAX_BETS = process.env.MAX_BETS || 1;
+const MAX_BETS = process.env.MAX_BETS || 4;
 
 // Initialize
 const app = express();
@@ -48,7 +48,7 @@ class TournamentRoom {
      * Whether there is a free seat to join the room
      */
     isSeatAvailable() {
-        return this.getPlayersCount() < this.maxPlayers;
+        return !this.started && this.getPlayersCount() < this.maxPlayers;
     }
 
     /**
@@ -58,6 +58,9 @@ class TournamentRoom {
         const seatAvailable = this.isSeatAvailable();
         if(seatAvailable) {
             this.players.push(player);
+            if(!this.isSeatAvailable()) {
+                this.started = true;
+            }
         } else {
             throw new Error('Could not add player: room full');
         }
@@ -138,6 +141,9 @@ class User {
     }
 }
 
+/**
+ * @type { TournamentRoom[]}
+ */
 const tournamentRooms = [];
 
 let maxID = 0;
@@ -164,6 +170,9 @@ const joinRoom = (socket, room, player) => {
  * @param {*} player 
  */
 const leaveRoom = (socket, room, player) => {
+    console.log('leaving room');
+    room.removePlayer(player.id);
+    socket.broadcast.to(room.name).emit('t-leave', JSON.stringify(player.toSocketData()));
     socket.leave(room.name);
     player.reset();
 }
@@ -189,9 +198,13 @@ io.on('connection', (socket) => {
     let tRoom;
 
     socket.on('login', (msg, callback) => {
-        const data = JSON.parse(msg);
-        console.log('loggedin: ', data);
-        player = new User(maxID++, data.name);
+        if(player) {
+            player.reset();
+        } else {
+            const data = JSON.parse(msg);
+            console.log('loggedin: ', data);
+            player = new User(maxID++, data.name);
+        }
         callback(JSON.stringify(player.toSocketData()));
     });
 
@@ -220,6 +233,10 @@ io.on('connection', (socket) => {
     });
 
     socket.on('t-join', (msg, callback) => {
+        prevRoom = tournamentRooms.find(room => room.getPlayerByName(player.name));
+        if(prevRoom) {
+            leaveRoom(socket, prevRoom, player);
+        };
         console.log('joined');
         tRoom = tournamentRooms.find(room => room.isSeatAvailable()); 
 
@@ -237,9 +254,15 @@ io.on('connection', (socket) => {
         ));
     })
 
+    socket.on('t-leave', (msg) => {
+        leaveRoom(socket, tRoom, player);
+    })
+
     socket.on('disconnect', () => {
         if(tRoom && player) {
             tRoom.removePlayer(player);
+        } else if(tRoom && tRoom.getPlayersCount() === 0) {
+            deleteRoom(tRoom);
         }
     })
 })
