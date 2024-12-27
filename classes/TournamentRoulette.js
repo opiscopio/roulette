@@ -127,15 +127,19 @@ export class TournamentRoulette extends Roulette {
     }
 
     onGameOver(msg) {
-        const players = JSON.parse(msg);
-        connection.playersFromSocketData(players);
-        this.renderPlayers();
-        const winner = players.reduce((a, b) => a.balance > b.balance ? a : b);
-        this.displayGameOverMessageElement(winner);
+        try {
+            const players = JSON.parse(msg); // Parse the socket message containing player data
+            connection.playersFromSocketData(players); // Update players from socket data
+            this.renderPlayers(); // Render the updated players
+            const winner = players.reduce((a, b) => a.balance > b.balance ? a : b); // Determine the winner
+            this.displayGameOverMessageElement(winner); // Display the game over message with the winner
+        } catch (error) {
+            console.error("Error parsing game over message:", error); // Log any parsing errors
+        }
     }
 
     addPlayer(player) {
-        connection.players.push(player);
+        connection.players.push(player); // Add a new player to the connection's player list
     }
 
     setCurrentPlayer(player) {
