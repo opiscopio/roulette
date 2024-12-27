@@ -178,7 +178,7 @@ const didAllPlayersPlaceAllBets = (players) => {
 }
 
 const isGameOver = (players) => {
-    return didAllPlayersPlaceAllBets(players)
+    return didAllPlayersPlaceAllBets(players);
 }
 
 io.on('connection', (socket) => {
@@ -205,7 +205,7 @@ io.on('connection', (socket) => {
         player.setBalance(newBalance);
         player.setBetsPlaced(betsPlaced);
 
-        if(isGameOver(players)) {
+        if (isGameOver(tRoom.getPlayers())) {
             console.log('game over');
             console.log(tRoom.getPlayers());
             socket.nsp.to(tRoom.name).emit("t-game-over", JSON.stringify(
@@ -217,7 +217,7 @@ io.on('connection', (socket) => {
         } else {
             socket.nsp.to(tRoom.name).emit('t-user-update', JSON.stringify(player.toSocketData()));
         }
-    })
+    });
 
     socket.on('t-join', (msg, callback) => {
         console.log('joined');
