@@ -167,7 +167,7 @@ export class TournamentRoulette extends Roulette {
         this.gameOverMessage.classList.add('winner');
         this.gameOverMessageElement.append(this.gameOverMessage);
         this.gameOverMessageElement.append(subtitleElement);
-        this.playAgainButton.innerHTML = 'NUEVO TURNEO';
+        this.playAgainButton.innerHTML = 'NUEVO TORNEO';
         this.gameOverMessageContainer.append(this.playAgainButton);
         this.playAgainButton.classList.add('play-again-button');
         this.container.append(this.gameOverMessageContainer);
