@@ -174,7 +174,11 @@ const deleteRoom = (room) => {
 }
 
 const didAllPlayersPlaceAllBets = (players) => {
-    return players.every(player => player.areAllBetsPlaced());
+    return players.every(player => player.areAllBetsPlaced() || player.balance <= 0);
+}
+
+const isGameOver = (players) => {
+    return didAllPlayersPlaceAllBets(players)
 }
 
 io.on('connection', (socket) => {
@@ -201,7 +205,7 @@ io.on('connection', (socket) => {
         player.setBalance(newBalance);
         player.setBetsPlaced(betsPlaced);
 
-        if(didAllPlayersPlaceAllBets(tRoom.getPlayers())) {
+        if(isGameOver(players)) {
             console.log('game over');
             console.log(tRoom.getPlayers());
             socket.nsp.to(tRoom.name).emit("t-game-over", JSON.stringify(
