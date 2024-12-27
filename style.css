@@ -515,6 +515,14 @@ body {
     background-color: black;
 }
 
+.roulette-menu button {
+    cursor: pointer;
+}
+
+.roulette-menu button.extra {
+    background-color: lightgray;
+}
+
 #modes-list {
     display: flex;
     align-items: flex-start;
