@@ -15,7 +15,11 @@ export class TournamentRoulette extends Roulette {
     gameOverMessageElement = document.createElement('div');
     gameOverMessageContainer = document.createElement('div');
     gameOverMessage = document.createElement('span');
+    subtitleElement = document.createElement('span');
     playAgainButton = document.createElement('button');
+
+    singleWinnerSubtitle = 'Ha ganado el torneo';
+    tieSubtitle = 'Han empatado';
 
     onConnect;
 
@@ -131,11 +135,34 @@ export class TournamentRoulette extends Roulette {
             const players = JSON.parse(msg); // Parse the socket message containing player data
             connection.playersFromSocketData(players); // Update players from socket data
             this.renderPlayers(); // Render the updated players
-            const winner = players.reduce((a, b) => a.balance > b.balance ? a : b); // Determine the winner
-            this.displayGameOverMessageElement(winner); // Display the game over message with the winner
+
+            // Determine the highest balance
+            const highestBalance = Math.max(...players.map(player => player.balance));
+
+            // Find all players with the highest balance
+            const winners = players.filter(player => player.balance === highestBalance);
+
+            if (winners.length > 1) {
+                // Handle tie case
+                this.displayTieMessage(winners);
+            } else {
+                // Handle single winner case
+                this.displayGameOverMessageElement(winners[0]);
+            }
         } catch (error) {
             console.error("Error parsing game over message:", error); // Log any parsing errors
         }
+    }
+
+    // Display the tie message
+    displayTieMessage(winners) {
+        const winnerNames = winners.map(winner => winner.name).join(', ');
+        this.gameOverMessage.innerHTML = winnerNames;
+        this.subtitleElement.innerHTML = this.tieSubtitle;
+        this.gameOverMessageContainer.style.display = 'flex';
+        setTimeout(() => {
+            this.gameOverMessageContainer.style.opacity = '1';
+        }, 50);
     }
 
     addPlayer(player) {
@@ -163,7 +190,8 @@ export class TournamentRoulette extends Roulette {
         this.gameOverMessageContainer.classList.add('game-over-message-container');
         const subtitleElement = document.createElement('span');
         subtitleElement.classList.add('subtitle');
-        subtitleElement.innerHTML = 'Ha ganado el torneo';
+        subtitleElement.innerHTML = this.singleWinnerSubtitle;
+        this.subtitleElement = subtitleElement;
         this.gameOverMessage.classList.add('winner');
         this.gameOverMessageElement.append(this.gameOverMessage);
         this.gameOverMessageElement.append(subtitleElement);
