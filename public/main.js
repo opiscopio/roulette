@@ -54,8 +54,6 @@ const initialClickListener = () => {
 
 document.addEventListener('click', initialClickListener);
 
-
-
 singleGame.events.on('onLeave', () => {
     showSection(menu);
 });

@@ -11,7 +11,7 @@ export class TournamentRoulette extends Roulette {
 
     scoreboard = document.createElement('ul');
     betCountElement = document.createElement('span');
-    maxBets = window.location.href.includes('localhost') ? 4 : 10;
+    maxBets = window.location.href.includes('localhost') ? 4 : 30;
     gameOverMessageElement = document.createElement('div');
     gameOverMessageContainer = document.createElement('div');
     gameOverMessage = document.createElement('span');
