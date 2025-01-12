@@ -59,7 +59,7 @@ export class TournamentRoulette extends Roulette {
         connection.emitJoinEvent().then(async () => {
             console.log('emitting join event: ', connection.player);
             this.enableBetButtons();
-            this.setDefaultBalance(connection.player.balance);
+            this.setBalance(this.defaultBalance);
             this.renderPlayerBetCount(connection.player.betCount);
             this.renderPlayers();
             await this.loadingScreen.setLoadedAmount(1);

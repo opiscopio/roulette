@@ -47,6 +47,10 @@ class BetHistory {
         })
     }
 
+    getPrevItem() {
+        return this.history[this.history.length - 2];
+    }
+
     clear() {
         this.history = [];
     }

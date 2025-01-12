@@ -582,6 +582,12 @@ class Roulette {
         })
 
         this.undoButton.button.addEventListener('click', () => {
+            const prevBetAmount = this.betHistory.getPrevItem()
+                .map(item => item.amount)
+                .reduce((prev, curr) => prev + curr);
+            if(prevBetAmount > this.balance) {
+                return;
+            }
             playAudio(sound.button);
             this.betHistory.undo();
             this.renderBalance();
@@ -596,6 +602,10 @@ class Roulette {
         });
 
         this.restoreButton.button.addEventListener('click', () => {
+            const prevBetAmount = this.latestBet.map(item => item.amount).reduce((prev, curr) => prev + curr);
+            if(prevBetAmount > this.balance) {
+                return;
+            }
             playAudio(sound.button);
             BetHistory.restoreToItem(this.latestBet);
             this.betHistory.push(this.latestBet);
@@ -635,6 +645,15 @@ class Roulette {
                 this.events.callEvent('onLeave');
             }
         })
+    }
+
+    /**
+     * 
+     * @param { RouletteBetButton[] } betButtons 
+     */
+    getTotalBetOfBetButtons(betButtons) {
+        const betAmount = betButtons.map(button => button.getTotalBetAmount()).reduce((prev, curr) => prev + curr);
+        return betAmount;
     }
 
     setBetAmount(amount) {

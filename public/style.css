@@ -28,6 +28,7 @@
 
 :root {
     --red: #D33438;
+    font-size: 16px;
 }
 
 body {
@@ -37,6 +38,7 @@ body {
     width: 100vw;
     height: 100vh;
     margin: 0px;
+    font-size: 16px;
 }
 
 .roulette-game .header {
