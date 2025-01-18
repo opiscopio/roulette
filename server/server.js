@@ -75,6 +75,10 @@ class TournamentRoom {
         return this.players.find(player => player.name === name);
     }
 
+    /**
+     * 
+     * @returns { User[] }
+     */
     getPlayers() {
         return this.players;
     }
@@ -194,7 +198,13 @@ io.on('connection', (socket) => {
 
     // Tournament events and variables are prefixed by t-
 
+    /**
+     * @type { User }
+     */
     let player;
+    /**
+     * @type { TournamentRoom }
+     */
     let tRoom;
 
     socket.on('login', (msg, callback) => {
@@ -218,13 +228,15 @@ io.on('connection', (socket) => {
         player.setBalance(newBalance);
         player.setBetsPlaced(betsPlaced);
 
-        if (isGameOver(tRoom.getPlayers())) {
+        const allPlayers = tRoom.getPlayers();
+
+        if (isGameOver(allPlayers)) {
             console.log('game over');
             console.log(tRoom.getPlayers());
             socket.nsp.to(tRoom.name).emit("t-game-over", JSON.stringify(
                 tRoom.getPlayers().map(_player => _player.toSocketData())
             ));
-            leaveRoom(socket, tRoom, player);
+            // leaveRoom(socket, tRoom, player);
             deleteRoom(tRoom);
             tRoom = null;
         } else {
@@ -232,7 +244,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('t-join', (msg, callback) => {
+    socket.on('t-join', (callback) => {
         prevRoom = tournamentRooms.find(room => room.getPlayerByName(player.name));
         if(prevRoom) {
             leaveRoom(socket, prevRoom, player);
@@ -245,10 +257,11 @@ io.on('connection', (socket) => {
             tournamentRooms.push(tRoom);
         }
 
+        player.reset();
+
         joinRoom(socket, tRoom, player);
         console.log(tRoom);
-        console.log(msg);
-        socket.broadcast.to(tRoom.name).emit('t-join', msg);
+        socket.broadcast.to(tRoom.name).emit('t-join', player.toSocketData());
         callback(JSON.stringify(
             tRoom.getPlayers().map(player => player.toSocketData())
         ));

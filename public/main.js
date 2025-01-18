@@ -41,7 +41,7 @@ const music = new MusicPlayer([
 music.repeat = true;
 
 const singleGame = new Roulette(element, music);
-const tournamentGame = new TournamentRoulette(tournamentElement, music, null, loadingScreen);
+const tournamentGame = new TournamentRoulette(tournamentElement, music, () => {}, loadingScreen);
 
 const nameInput = /** @type { HTMLInputElement } */ (document.getElementById('name-input'));
 
@@ -87,8 +87,8 @@ const modes = {
             showSection(tournamentElement);
             tournamentGame.login(player).then(() => {
                 tournamentGame.restart();
-            }).catch(() => {
-                alert('Could not connect');
+            }).catch((e) => {
+                alert('Could not connect: ' + e.message);
             });
             // }, 200)
         }

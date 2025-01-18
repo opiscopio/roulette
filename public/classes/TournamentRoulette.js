@@ -56,8 +56,8 @@ export class TournamentRoulette extends Roulette {
 
     restart() {
         this.hideGameOverMessageElement();
+        console.log('emitting join event: ', connection.player);
         connection.emitJoinEvent().then(async () => {
-            console.log('emitting join event: ', connection.player);
             this.enableBetButtons();
             this.setBalance(this.defaultBalance);
             this.renderPlayerBetCount(connection.player.betCount);
@@ -81,11 +81,14 @@ export class TournamentRoulette extends Roulette {
         this.loadingScreen.setLoadedAmount(0.2);
         return new Promise((resolve, reject) => {
             connection.init(this.onConnect);
+            console.log('logging in');
             connection.emitLoginEvent(player).then(async (player) => {
+                console.log('emitted login event');
                 await this.loadingScreen.setLoadedAmount(0.5);
                 this.setBalance(player.balance);
                 resolve(true);
             }).catch(() => {
+                alert('An error occured while connecting');
                 reject(false);
             });//this.socket.emit('login', JSON.stringify(this.player.toSocketData()));
         })
@@ -116,9 +119,9 @@ export class TournamentRoulette extends Roulette {
     //     this.socket.
     // }
 
-    onPlayerJoin(msg) {
-        console.log('player joined');
-        const data = JSON.parse(msg);
+    onPlayerJoin(data) {
+        // console.log('player joined', msg);
+        // const data = JSON.parse(msg);
         console.log(data);
         this.addPlayer(new Player(
             data.name,

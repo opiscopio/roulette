@@ -125,6 +125,9 @@ class RouletteSocketConnection extends RouletteConnection {
      */
     init(onConnect) {
         this.socket = io(SERVER_URL);
+        if(!onConnect) {
+            throw new Error('onConnect callback not defined');
+        }
         if(this.socket.connected && onConnect) {
             onConnect();
         }
@@ -143,8 +146,10 @@ class RouletteSocketConnection extends RouletteConnection {
 
     emitJoinEvent() {
         return new Promise((resolve) => {
+            console.log('emitting join event');
             console.log(this.player);
-            this.socket.emit('t-join', JSON.stringify(this.player.toSocketData()), (res) => {
+            this.socket.emit('t-join', (res) => {
+                console.log('callback called');
                 // Data of all players in the newly joined room
                 const data = JSON.parse(res);
                 console.log('data: ', data);
